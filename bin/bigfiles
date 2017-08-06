@@ -1,0 +1,190 @@
+#!/bin/bash
+
+# bigfiles 1.0.0
+# Determines the biggest files in a directory and its's subdirectories
+#
+# Copyright 2017 Johann N. Loefflmann
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+PATH=/bin:/usr/bin:/usr/sbin
+LANG=C
+trap 'rm -f $TMP1 $TMP2; exit 2' 1 2 13 15
+# if file descriptor 1 (stdout) is open, we are in interactive mode (no redirect)
+if [ -t 1 ]; then INTERACTIVE=1; else INTERACTIVE=0; fi
+
+usage() {
+cat << END
+bigfiles v1.0.0, Copyright 2017 Johann N. Loefflmann
+
+determines the biggest files in a directory and it's subdirectories
+
+usage:
+    bigfiles [path [min_size [max_files]]]
+
+    path specifies the directory to be traversed.
+    If path is omitted, this help will be printed.
+
+    min_size specifies the file size that a file must have at least in
+    order to be considered to be a big file. You may append k, M, G and T for
+    kilo, Mega, Giga, and Tera. If min_size is omitted, min_size is set to 0.
+       
+    max_files specifies the maximum number of big files.
+    If max_files is omitted or if max_files is set to 0,
+    all files will be printed that matches min_size.
+
+Examples:
+    bigfiles . 1M
+        # all files > 1 MB in the current working directory and below
+    bigfiles / 1G 25
+        # 25 biggest files > 1 GB in / and below
+END
+exit 1 
+}
+
+# returns the max value of the two parameters
+getMax() {
+    if [ $1 -lt $2 ]; then
+        echo $2
+    else
+        echo $1
+    fi
+}
+
+printPleaseWaitMsg() {
+    if [[ ${INTERACTIVE} -eq 1 ]]; then
+        echo -n "Please wait ..."
+    fi
+}
+
+clearPleaseWaitMsg() {
+    if [[ ${INTERACTIVE} -eq 1 ]]; then
+        # overwrite the "Please wait ..." message
+        echo -n $'\r'
+        echo -n "               "
+        echo -n $'\r'
+    fi
+}
+
+inputValidation() {
+    if [[ -z $1 ]]; then
+        printf "$3\n"
+        exit 1
+    fi
+    if [[ ! "$1" =~ $2 ]]; then
+        printf "$3\n"
+        exit 1
+    fi
+}
+
+main() {
+    TMP1=/tmp/bigfiles1.$$
+    TMP2=/tmp/bigfiles2.$$
+
+    case $# in
+        1) PFAD=$1;
+           MIN_SIZE=0;
+           MAX_FILES=;
+           ;;
+        2) PFAD=$1;
+           MIN_SIZE=$2;
+           MAX_FILES=;
+           ;;
+        3) PFAD=$1;
+           MIN_SIZE=$2;
+           MAX_FILES=$3;
+           ;;
+        *) usage;;
+    esac
+
+    # input validation
+    if [[ -z $MAX_FILES ]]; then
+        COUNT_FILTER="cat -"
+    else
+        inputValidation $MAX_FILES '^([[:digit:]]+)$' \
+            "Input ${MAX_FILES} is invalid. Not a number."
+        COUNT_FILTER="head -n $MAX_FILES"
+    fi
+
+    if [[ "${MIN_SIZE}" = "0" ]]; then
+        SIZE_FILTER=""
+    else
+        # greates common divisor for find on both macOS and GNU/Linux
+        inputValidation "${MIN_SIZE}" '^([[:digit:]]+)[kMGT]?$' \
+            "Input ${MIN_SIZE} is invalid. n only followed by one k, M, G, or T"
+        if [[ "${MIN_SIZE}" =~ ^([[:digit:]]+)$ ]]; then
+            MIN_SIZE="${MIN_SIZE}c"
+        fi
+        SIZE_FILTER="-size +${MIN_SIZE}"
+    fi
+
+    printPleaseWaitMsg
+    # minor adjustment for macOS
+    PFADX="${PFAD}/."
+    # do the major work
+    find ${PFADX} -type f ${SIZE_FILTER} -ls 2>/dev/null | sort -nr -k 7 | ${COUNT_FILTER} | sed "s,${PFADX}/,," >$TMP1
+
+    if [ -s "$TMP1" ]; then
+        # determine the widest required space for each colum 
+        # that has a variable width (link, owner, group, and size)
+        # init with a width of 1 for all four columns
+        MAXLEN=(1 1 1 1)
+        while read LINE; do 
+            ITEMS=($LINE)
+            for i in 0 1 2 3; do
+                MAXLEN[$i]=$(getMax ${MAXLEN[$i]} ${#ITEMS[$[$i + 3]]})
+            done
+        # avoid the loss of variables inside a loop
+        done < <(cat $TMP1)
+
+        # reformatting the output by using optimal column widths
+        cat $TMP1 | while read LINE; do
+            ITEMS=($LINE)
+            FILENAME=${ITEMS[@]:10}
+            printf "%10s %${MAXLEN[0]}s %-${MAXLEN[1]}s %-${MAXLEN[2]}s %${MAXLEN[3]}s %-3s %2s %5s %s\n" "${ITEMS[@]:2:8}" "${FILENAME}" >> $TMP2
+        done
+
+        # Owners of the biggest files as a csv
+        OWNERS=$(cat $TMP2 |\
+        awk '{print $3}' | sort -u | awk '{printf("%s, ",$1)}')
+        OWNERS=${OWNERS%,*}
+
+        # How many biggest files are we going to print?
+        COUNT=$(wc -l $TMP2)
+        COUNT=${COUNT% *}
+        COUNT=${COUNT##* }
+
+        clearPleaseWaitMsg
+
+        # Print header
+        if [ $COUNT -eq 1 ]; then
+            echo "Owners of the biggest file: $OWNERS"
+            echo "The biggest file (min size=${MIN_SIZE}) on $PFAD is:" 
+        else
+            echo "Owners of the biggest $COUNT files: $OWNERS"
+            echo "The biggest $COUNT files (min size=${MIN_SIZE}) on $PFAD are:" 
+        fi
+
+        # print the preformatted list
+        cat $TMP2
+
+        # clean up
+        rm -f $TMP1 $TMP2
+    else
+        clearPleaseWaitMsg
+        echo "There is no big file (min size=${MIN_SIZE}) in $PFAD"
+        rm -f $TMP1
+    fi
+}
+
+main $*
