@@ -25,7 +25,7 @@ if [ -t 1 ]; then INTERACTIVE=1; else INTERACTIVE=0; fi
 
 usage() {
 cat << END
-bigfiles v1.0.0, Copyright 2017 Johann N. Loefflmann
+bigfiles v1.0.1, Copyright 2017 Johann N. Loefflmann
 
 determines the biggest files in a directory and it's subdirectories
 
@@ -78,11 +78,11 @@ clearPleaseWaitMsg() {
 
 inputValidation() {
     if [[ -z $1 ]]; then
-        printf "$3\n"
+        printf "Error: %s. Exit.\n" "$3" >&2
         exit 1
     fi
     if [[ ! "$1" =~ $2 ]]; then
-        printf "$3\n"
+        printf "Error: %s. Exit.\n" "$3" >&2
         exit 1
     fi
 }
@@ -107,15 +107,16 @@ main() {
         *) usage;;
     esac
 
-    # input validation
+    # input validation for max files
     if [[ -z $MAX_FILES ]]; then
         COUNT_FILTER="cat -"
     else
-        inputValidation $MAX_FILES '^([[:digit:]]+)$' \
+        inputValidation "${MAX_FILES}" '^([[:digit:]]+)$' \
             "Input ${MAX_FILES} is invalid. Not a number."
-        COUNT_FILTER="head -n $MAX_FILES"
+        COUNT_FILTER="head -n ${MAX_FILES}"
     fi
 
+    # input validation for min size
     if [[ "${MIN_SIZE}" = "0" ]]; then
         SIZE_FILTER=""
     else
@@ -128,11 +129,18 @@ main() {
         SIZE_FILTER="-size +${MIN_SIZE}"
     fi
 
-    printPleaseWaitMsg
     # minor adjustment for macOS
     PFADX="${PFAD}/."
+
+    # input validation for the direcotry
+    if [[ ! -d "${PFADX}" ]]; then
+        printf "Error: %s is not a directory. Exit.\n" "${PFAD}"
+        exit 1
+    fi
+
     # do the major work
-    find ${PFADX} -type f ${SIZE_FILTER} -ls 2>/dev/null | sort -nr -k 7 | ${COUNT_FILTER} | sed "s,${PFADX}/,," >$TMP1
+    printPleaseWaitMsg
+    find "${PFADX}" -type f ${SIZE_FILTER} -ls 2>/dev/null | sort -nr -k 7 | ${COUNT_FILTER} | sed "s,${PFADX}/,," >$TMP1
 
     if [ -s "$TMP1" ]; then
         # determine the widest required space for each colum 
@@ -168,11 +176,11 @@ main() {
 
         # Print header
         if [ $COUNT -eq 1 ]; then
-            echo "Owners of the biggest file: $OWNERS"
-            echo "The biggest file (min size=${MIN_SIZE}) on $PFAD is:" 
+            printf 'Owners of the biggest file: %s\n' "${OWNERS}"
+            printf 'The biggest file (min size=%s) on "%s" is:\n' "${MIN_SIZE}" "${PFAD}"
         else
-            echo "Owners of the biggest $COUNT files: $OWNERS"
-            echo "The biggest $COUNT files (min size=${MIN_SIZE}) on $PFAD are:" 
+            printf 'Owners of the biggest %s files: %s\n' "${COUNT}" "${OWNERS}"
+            printf 'The biggest %s files (min size=%s) on "%s" are:\n' "${COUNT}" "${MIN_SIZE}" "${PFAD}"
         fi
 
         # print the preformatted list
@@ -182,9 +190,9 @@ main() {
         rm -f $TMP1 $TMP2
     else
         clearPleaseWaitMsg
-        echo "There is no big file (min size=${MIN_SIZE}) in $PFAD"
+        printf 'There is no big file (min size=%s) in folder "%s"\n' "${MIN_SIZE}" "${PFAD}"
         rm -f $TMP1
     fi
 }
 
-main $*
+main "$@"
