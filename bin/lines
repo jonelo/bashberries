@@ -1,0 +1,210 @@
+#!/bin/bash
+
+# lines 1.0.0
+# Extracts a block of lines from a textfile
+#
+# Copyright 2017 Johann N. Loefflmann
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+
+PATH=/bin:/usr/bin:/usr/sbin
+LANG=C
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+. "${SCRIPT_DIR}/interaction.include"
+. "${SCRIPT_DIR}/trim.include"
+
+usage() {
+cat << END
+lines v1.0.0, Copyright 2017 Johann N. Loefflmann
+
+Extracts a block of lines from a textfile
+
+Usage:
+    lines [-i] [-b number] [-e number] [-H number] [-T number]
+          [file [begin [end]]]
+
+Options:
+    -b number  If begin is a string and if it matches more than one line, you
+               can specify a particular match number.
+    -e number  If end is a string and if it matches more than one line, you
+               can specify a particular match number.
+    -i         Ignore case. Perform case insensitie matching. By default,
+               the search algorithm is case sensitive.
+    -H number  A positive number cuts the head of the output.
+               A negative number extends the head of the output.
+    -T number  A postivie number extends the tail of the output.
+               A negative number cuts the tail of the output.
+
+Parameters:
+    file       Specifies the textfile that needs to be processed.
+               If file is omitted, this usage will be printed.
+
+    begin      Specifies the search string in order to find the "begin".
+               If begin is a string, it searches for the first occurence
+               in the file.  If begin is an integer, it specifies a line
+               number (starting with 1).
+
+    end        Specifies the search string in order to find the "end".
+               If end is a string, it searches for the first occurence
+               starting with the line that is specified by "begin".
+               If end is an integer, it specifies a line number
+               (starting with 1).
+
+Examples:
+    lines log.txt 20 40
+               Prints line number 20 to line number 40 from the file called
+               log.txt
+
+    lines -T -1 verylong.log "^2017-08-06" "^2017-08-07"
+               Prints lines from the log file calle verylong.log, starting
+               with the line that starts with "2017-08-06" and ending with
+               the line that starts with "2017-08-07", but not printing out
+               that last ending line
+END
+exit 1
+}
+
+main() {
+    # options
+    iflag=''
+    bflag=0
+    bvalue=1
+    eflag=0
+    evalue=1
+    Eflag=0
+    Evalue=0
+    Bflag=0
+    Bvalue=0
+    while getopts 'ib:e:H:T:' OPTION
+    do
+        case $OPTION in
+        i) iflag='-i'
+           ;;
+        b) bflag=1
+           bvalue="$OPTARG"
+           exitOnInvalidInput "${bvalue}" '^([[:digit:]]+)$' \
+               "Input ${bvalue} is invalid. Not a positive number. Exit."
+           ;;
+        e) eflag=1
+           evalue="$OPTARG"
+           exitOnInvalidInput "${evalue}" '^([[:digit:]]+)$' \
+               "Input ${evalue} is invalid. Not a positive number. Exit."
+           ;;
+        H) Bflag=1
+           Bvalue="$OPTARG"
+           exitOnInvalidInput "${Bvalue}" '^\-?([[:digit:]]+)$' \
+               "Input ${Bvalue} is invalid. Not an integer. Exit."
+           ;;
+        T) Eflag=1
+           Evalue="$OPTARG"
+           exitOnInvalidInput "${Evalue}" '^\-?([[:digit:]]+)$' \
+               "Input ${Evalue} is invalid. Not an integer. Exit."
+           ;;
+        ?) usage
+           ;;
+        esac
+    done
+    shift $(($OPTIND -1))
+
+    # parameters
+    case $# in
+        1) FILE="$1";
+           BEGIN=1;
+           END=;
+           ;;
+        2) FILE="$1";
+           BEGIN="$2";
+           END=;
+           ;;
+        3) FILE="$1";
+           BEGIN="$2";
+           END="$3";
+           ;;
+        *) usage;;
+    esac
+
+    if [[ ! -f ${FILE} ]]; then
+        printf "Error: file %s not found. Exit.\n" ${FILE} >&2
+        exit 1;
+    fi
+
+    if [[ ${BEGIN} =~ ^([[:digit:]]+)$ ]]; then
+        # BEGIN is a number
+        if [[ ${BEGIN} -le 0 ]]; then
+            printf "Error: begin-value has to be greater than zero. Exit.\n" >&2
+            exit 1
+        else
+            # BEGIN is an integer > 0
+            STARTLINE=${BEGIN}
+        fi
+    else
+        # BEGIN is a string
+        STARTLINE=$(grep ${iflag} -n "${BEGIN}" ${FILE} | tail +${bvalue})
+
+        # printf "DEBUG1: Startline: %s\n" $STARTLINE
+        if [[ -z ${STARTLINE} ]]; then
+            printf "Error: string \"%s\" not found in file %s. Exit.\n" "${BEGIN}" "${FILE}" >&2
+            exit 1
+        else
+            # only interested in the line number
+            STARTLINE=${STARTLINE%%:*}
+        fi
+    fi
+
+    # adjust STARTLINE if -B number was set
+    STARTLINE=$(($STARTLINE - $Bvalue))
+    if [ $STARTLINE -le 0 ]; then
+       STARTLINE=1
+    fi
+    # printf "DEBUG2: Startline: %s\n" $STARTLINE
+
+    # END has not been set
+    if [ -z ${END} ]; then
+         END=$(wc -l < $FILE)
+         END=$(trim ${END})
+    fi
+
+    # END has been set
+    if [[ ${END} =~ ^([[:digit:]]+)$ ]]; then
+        # END is an integer
+        if [[ ${END} -le 0 ]]; then
+            printf "Error: end-value has to be greater than zero. Exit.\n" >&2
+            exit 1
+        else
+            #ENDLINE=$((${STARTLINE} + ${END} - 1))
+            ENDLINE=${END}
+        fi
+    else
+        # END is a string
+        # ignore the leading lines, before searching
+        ENDLINE=$(tail -n +${STARTLINE} ${FILE} | grep ${iflag} -n ${END} | tail +${evalue})
+        if [[ -z $ENDLINE ]]; then
+            printf "Error: string \"%s\" not found after \"%s\" in file %s. Exit.\n" \
+                "${END}" "${BEGIN}" "${FILE}" >&2
+            exit 1
+        else
+            # only interested in the line number
+            ENDLINE=${ENDLINE%%:*}
+            # re-add the ignored leading lines
+            ENDLINE=$((${ENDLINE} + ${STARTLINE} - 1))
+        fi
+    fi
+    ENDLINE=$(($ENDLINE+ $Evalue))
+    # printf "DEBUG: Endline: %s\n" $ENDLINE
+    if [ $ENDLINE -ge $STARTLINE ]; then
+        tail -n +${STARTLINE} ${FILE} | head -n $((${ENDLINE} - ${STARTLINE} + 1))
+    fi
+}
+
+main "$@"
