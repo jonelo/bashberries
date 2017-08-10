@@ -1,7 +1,10 @@
 #!/bin/bash
 
-# bigfiles 1.0.0
+# bigfiles 1.0.2
 # Determines the biggest files in a directory and its's subdirectories
+#
+# It is part of the bash-dwarfs project
+# see also https://github.com/jonelo/bash-dwarfs
 #
 # Copyright 2017 Johann N. Loefflmann
 #
@@ -20,16 +23,17 @@
 PATH=/bin:/usr/bin:/usr/sbin
 LANG=C
 trap 'rm -f $TMP1 $TMP2; exit 2' 1 2 13 15
-# if file descriptor 1 (stdout) is open, we are in interactive mode (no redirect)
-if [ -t 1 ]; then INTERACTIVE=1; else INTERACTIVE=0; fi
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+. "${SCRIPT_DIR}/interaction.include"
+. "${SCRIPT_DIR}/math.include"
 
 usage() {
 cat << END
-bigfiles v1.0.1, Copyright 2017 Johann N. Loefflmann
+bigfiles v1.0.2, Copyright 2017 Johann N. Loefflmann
 
-determines the biggest files in a directory and it's subdirectories
+Determines the biggest files in a directory and it's subdirectories
 
-usage:
+Usage:
     bigfiles [path [min_size [max_files]]]
 
     path specifies the directory to be traversed.
@@ -45,46 +49,12 @@ usage:
 
 Examples:
     bigfiles . 1M
-        # all files > 1 MB in the current working directory and below
+        all files > 1 MB in the current working directory and below
+
     bigfiles / 1G 25
-        # 25 biggest files > 1 GB in / and below
+        25 biggest files > 1 GB in / and below
 END
 exit 1 
-}
-
-# returns the max value of the two parameters
-getMax() {
-    if [ $1 -lt $2 ]; then
-        echo $2
-    else
-        echo $1
-    fi
-}
-
-printPleaseWaitMsg() {
-    if [[ ${INTERACTIVE} -eq 1 ]]; then
-        echo -n "Please wait ..."
-    fi
-}
-
-clearPleaseWaitMsg() {
-    if [[ ${INTERACTIVE} -eq 1 ]]; then
-        # overwrite the "Please wait ..." message
-        echo -n $'\r'
-        echo -n "               "
-        echo -n $'\r'
-    fi
-}
-
-inputValidation() {
-    if [[ -z $1 ]]; then
-        printf "Error: %s. Exit.\n" "$3" >&2
-        exit 1
-    fi
-    if [[ ! "$1" =~ $2 ]]; then
-        printf "Error: %s. Exit.\n" "$3" >&2
-        exit 1
-    fi
 }
 
 main() {
@@ -108,21 +78,21 @@ main() {
     esac
 
     # input validation for max files
-    if [[ -z $MAX_FILES ]]; then
+    if [ -z $MAX_FILES ]; then
         COUNT_FILTER="cat -"
     else
-        inputValidation "${MAX_FILES}" '^([[:digit:]]+)$' \
-            "Input ${MAX_FILES} is invalid. Not a number."
+        exitOnInvalidInput "${MAX_FILES}" '^([[:digit:]]+)$' \
+            "Input ${MAX_FILES} is invalid. Not a number. Exit."
         COUNT_FILTER="head -n ${MAX_FILES}"
     fi
 
     # input validation for min size
-    if [[ "${MIN_SIZE}" = "0" ]]; then
+    if [ "${MIN_SIZE}" = "0" ]; then
         SIZE_FILTER=""
     else
         # greates common divisor for find on both macOS and GNU/Linux
-        inputValidation "${MIN_SIZE}" '^([[:digit:]]+)[kMGT]?$' \
-            "Input ${MIN_SIZE} is invalid. n only followed by one k, M, G, or T"
+        exitOnInvalidInput "${MIN_SIZE}" '^([[:digit:]]+)[kMGT]?$' \
+            "Input ${MIN_SIZE} is invalid. n can only followed by one k, M, G, or T. Exit."
         if [[ "${MIN_SIZE}" =~ ^([[:digit:]]+)$ ]]; then
             MIN_SIZE="${MIN_SIZE}c"
         fi
@@ -133,7 +103,7 @@ main() {
     PFADX="${PFAD}/."
 
     # input validation for the direcotry
-    if [[ ! -d "${PFADX}" ]]; then
+    if [ ! -d "${PFADX}" ]; then
         printf "Error: %s is not a directory. Exit.\n" "${PFAD}"
         exit 1
     fi

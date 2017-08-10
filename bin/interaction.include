@@ -1,0 +1,61 @@
+# interaction.include is an include file for bash scripts
+# provides functions for an user interaction
+#
+# It is part of the bash-dwarfs project,
+# see also https://github.com/jonelo/bash-dwarfs
+#
+# To use it for your project, store this file where your bash script
+# is stored and source this file by calling
+#
+# SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+# . "${SCRIPT_DIR}/interaction.include"
+#
+#
+# Copyright 2017 Johann N. Loefflmann
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# if file descriptor 1 (stdout) is open, we are in interactive mode (no redirect)
+if [ -t 1 ]; then _INTERACTIVE=1; else _INTERACTIVE=0; fi
+
+# prints "Please wait ..." on stderr
+printPleaseWaitMsg() {
+    if [ ${_INTERACTIVE} -eq 1 ]; then
+        printf "Please wait ..."
+    fi
+} >&2
+
+# clears the "Please wait ..." message again
+clearPleaseWaitMsg() {
+    if [ ${_INTERACTIVE} -eq 1 ]; then
+        # overwrite the "Please wait ..." message
+        printf "\r               \r"
+    fi
+} >&2
+
+# exits on invalid input
+# param $1 an error message
+exitOnInvalidInput() {
+    if [ -z $1 ] || [[ ! "$1" =~ $2 ]]; then
+        printf "Error: %s\n" "$3"
+        exit 1
+    fi
+} >&2
+
+# prints a warning on invalid input
+# param $1 a warning message
+warningOnInvalidInput() {
+    if [ -z $1 ] || [[ ! "$1" =~ $2 ]]; then
+        printf "Warning: %s\n" "$3"
+    fi
+} >&2
