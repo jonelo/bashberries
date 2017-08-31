@@ -1,7 +1,7 @@
 # bash-dwarfs
 bash-dwarfs (note the hyphen between bash and dwarfs) is a collection of tiny bash scripts (as known as a dwarf) that can do some work for you. The term has nothing to do with bashing a dwarf since bash stands for "Bourne-again shell" - one of the most famous shells for GNU/Linux and Unix systems. No dwarf was harmed in the making of this collection of scripts ;-)
 
-All bash-dwarfs have been tested on both Ubuntu 16.04.03 LTS and macOS 10.11.6.
+All bash-dwarfs have been tested on both Ubuntu 16.04.03 LTS and macOS 10.12.6.
 If you don't set any parameters for a script, a short help will be printed.
 
 ## Overview of the dwarfs
