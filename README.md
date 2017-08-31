@@ -87,7 +87,7 @@ Examples:
                log.txt
 
     lines -T -1 verylong.log "^2017-08-06" "^2017-08-07"
-               Prints lines from the log file calle verylong.log, starting
+               Prints lines from the log file called verylong.log, starting
                with the line that starts with "2017-08-06" and ending with
                the line that starts with "2017-08-07", but not printing out
                that last ending line
