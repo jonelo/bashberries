@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # bigfiles 1.0.2
 # Determines the biggest files in a directory and its's subdirectories

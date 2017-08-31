@@ -28,7 +28,7 @@
 # returns the max value of the two parameters
 # param $1 first value
 # param $2 second value
-getMax() {
+function getMax() {
     if [ $1 -lt $2 ]; then
         printf "%s\n" $2
     else

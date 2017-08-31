@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # lines 1.0.0
 # Extracts a block of lines from a textfile
@@ -134,7 +134,7 @@ main() {
         *) usage;;
     esac
 
-    if [[ ! -f ${FILE} ]]; then
+    if [ ! -f ${FILE} ]; then
         printf "Error: file %s not found. Exit.\n" ${FILE} >&2
         exit 1;
     fi
