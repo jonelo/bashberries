@@ -6,10 +6,11 @@ If you don't set any parameters for a script, a short help will be printed.
 
 ## Overview of the dwarfs
 
-Script name    | Description                                                                |
--------------- | -------------------------------------------------------------------------- |
-bigfiles       | determines the biggest files in a directory and it's subdirectories        |
-lines          | Extracts a block of lines from a textfile                                  |
+Script name     | Description                                                                |
+--------------- | -------------------------------------------------------------------------- |
+bigfiles        | determines the biggest files in a directory and it's subdirectories        |
+lines           | Extracts a block of lines from a textfile                                  |
+update_property | Updates the value of a key/value pair in a property file                   |
 
 
 ## The bash-dwarfs in detail
@@ -90,4 +91,34 @@ Examples:
                with the line that starts with "2017-08-06" and ending with
                the line that starts with "2017-08-07", but not printing out
                that last ending line
+```
+
+### update_property
+
+```
+update_property v1.0.0, Copyright 2017 Johann N. Loefflmann
+
+Updates the value of a key/value pair in a property file.
+The script saves existing comments and also the order of the properties.
+
+Usage:
+    update_property [-e] [-f] [-q] [file key value]
+
+Options:
+    -e      echo the updated line of the file.
+    -f      force to append the key/value pair to the file even if the key is
+            not in the property file yet.
+    -q      set quotes around the value when writing the value.
+
+Parameters:
+    file    specifies the file that needs to be updated.
+
+    key     specifies the key in the property file.
+
+    value   specifies the value for the key.
+
+Examples:
+    update_property -f app.conf mykey "new value"
+            updates the key called mykey with the value called "new value" in
+            the app.conf property file in any case
 ```
