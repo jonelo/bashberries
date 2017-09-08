@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# bigfiles 1.0.2
+# bigfiles 1.1.0
 # Determines the biggest files in a directory and its's subdirectories
 #
 # It is part of the bash-dwarfs project
@@ -29,30 +29,36 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 
 usage() {
 cat << END
-bigfiles v1.0.2, Copyright 2017 Johann N. Loefflmann
+bigfiles v1.1.0, Copyright 2017 Johann N. Loefflmann
 
 Determines the biggest files in a directory and it's subdirectories
 
 Usage:
-    bigfiles [path [min_size [max_files]]]
+    bigfiles [-o] [-g greater] [-n max_files] [path]
 
-    path specifies the directory to be traversed.
-    If path is omitted, this help will be printed.
+Options:
+    -o           print the owners of the biggest files.
+    -g greater   a file is a big file if its file size is greater
+                 than the greater value. You may append
+                 k, M, G and T for kilo, Mega, Giga, and Tera.
+                 If greater is omitted, greater is set to 0.
 
-    min_size specifies the file size that a file must have at least in
-    order to be considered to be a big file. You may append k, M, G and T for
-    kilo, Mega, Giga, and Tera. If min_size is omitted, min_size is set to 0.
-       
-    max_files specifies the maximum number of big files.
-    If max_files is omitted or if max_files is set to 0,
-    all files will be printed that matches min_size.
+    -n max_files specifies the maximum number of big files.
+                 If max_files is omitted or if max_files is set to 0,
+                 all files will be printed that matches min_size.
+
+Parameters:
+    path         specifies the directory to be traversed.
+                 If path is omitted, this help will be printed.
 
 Examples:
-    bigfiles . 1M
-        all files > 1 MB in the current working directory and below
+    bigfiles -g 1M .
+                 all files greater than 1 MB in the current working directory
+                 and below.
 
-    bigfiles / 1G 25
-        25 biggest files > 1 GB in / and below
+    bigfiles -o -n 25 -g 1G /
+                 25 biggest files > 1 GB in the root directory and below including
+                 a summary of the owners of those files.
 END
 exit 1 
 }
@@ -61,18 +67,29 @@ main() {
     TMP1=/tmp/bigfiles1.$$
     TMP2=/tmp/bigfiles2.$$
 
+    # options
+    MIN_SIZE=0
+    MAX_FILES=
+    OFLAG=0
+
+    while getopts 'g:n:o' OPTION
+    do
+        case $OPTION in
+        g) MIN_SIZE="$OPTARG"
+           ;;
+        n) MAX_FILES="$OPTARG"
+           ;;
+        o) OFLAG=1
+           ;;
+        ?) usage
+           ;;
+        esac
+    done
+    shift $(($OPTIND -1))
+
+    # parameters
     case $# in
-        1) PFAD=$1;
-           MIN_SIZE=0;
-           MAX_FILES=;
-           ;;
-        2) PFAD=$1;
-           MIN_SIZE=$2;
-           MAX_FILES=;
-           ;;
-        3) PFAD=$1;
-           MIN_SIZE=$2;
-           MAX_FILES=$3;
+        1) PFAD=$1
            ;;
         *) usage;;
     esac
@@ -90,7 +107,8 @@ main() {
     if [ "${MIN_SIZE}" = "0" ]; then
         SIZE_FILTER=""
     else
-        # greates common divisor for find on both macOS and GNU/Linux
+        # greatest common divisor for find on both macOS and GNU/Linux
+        MIN_SIZE=$(echo $MIN_SIZE | tr '[:lower:]' '[:upper:]' | tr 'K' 'k')
         exitOnInvalidInput "${MIN_SIZE}" '^([[:digit:]]+)[kMGT]?$' \
             "Input ${MIN_SIZE} is invalid. n can only followed by one k, M, G, or T. Exit."
         if [[ "${MIN_SIZE}" =~ ^([[:digit:]]+)$ ]]; then
@@ -117,7 +135,7 @@ main() {
         # that has a variable width (link, owner, group, and size)
         # init with a width of 1 for all four columns
         MAXLEN=(1 1 1 1)
-        while read LINE; do 
+        while read LINE; do
             ITEMS=($LINE)
             for i in 0 1 2 3; do
                 MAXLEN[$i]=$(getMax ${MAXLEN[$i]} ${#ITEMS[$[$i + 3]]})
@@ -145,13 +163,21 @@ main() {
         clearPleaseWaitMsg
 
         # Print header
-        if [ $COUNT -eq 1 ]; then
-            printf 'Owners of the biggest file: %s\n' "${OWNERS}"
-            printf 'The biggest file (min size=%s) on "%s" is:\n' "${MIN_SIZE}" "${PFAD}"
-        else
-            printf 'Owners of the biggest %s files: %s\n' "${COUNT}" "${OWNERS}"
-            printf 'The biggest %s files (min size=%s) on "%s" are:\n' "${COUNT}" "${MIN_SIZE}" "${PFAD}"
+
+        if [ ${OFLAG} -eq 1 ]; then
+            if [ $COUNT -eq 1 ]; then
+                printf 'Owners of the biggest file: %s\n' "${OWNERS}"
+            else
+                printf 'Owners of the biggest %s files: %s\n' "${COUNT}" "${OWNERS}"
+            fi
         fi
+
+        if [ $COUNT -eq 1 ]; then
+            printf 'The biggest file (> %s) on "%s" is:\n' "${MIN_SIZE}" "${PFAD}"
+        else
+            printf 'The biggest %s files (> %s) on "%s" are:\n' "${COUNT}" "${MIN_SIZE}" "${PFAD}"
+        fi
+
 
         # print the preformatted list
         cat $TMP2
@@ -160,7 +186,7 @@ main() {
         rm -f $TMP1 $TMP2
     else
         clearPleaseWaitMsg
-        printf 'There is no big file (min size=%s) in folder "%s"\n' "${MIN_SIZE}" "${PFAD}"
+        printf 'There is no big file (> %s) in folder "%s".\n' "${MIN_SIZE}" "${PFAD}"
         rm -f $TMP1
     fi
 }
