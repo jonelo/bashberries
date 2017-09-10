@@ -45,7 +45,7 @@ Options:
 
     -n max_files specifies the maximum number of big files.
                  If max_files is omitted or if max_files is set to 0,
-                 all files will be printed that matches min_size.
+                 all files will be printed that matches -g.
 
 Parameters:
     path         specifies the directory to be traversed.
