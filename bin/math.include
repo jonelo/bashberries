@@ -1,3 +1,5 @@
+#!/usr/bin/env bash
+#
 # math.include is an include file for bash scripts
 # it provides mathematical functions
 #

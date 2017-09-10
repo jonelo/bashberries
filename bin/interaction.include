@@ -1,3 +1,5 @@
+#!/usr/bin/env bash
+#
 # interaction.include is an include file for bash scripts
 # provides functions for an user interaction
 #

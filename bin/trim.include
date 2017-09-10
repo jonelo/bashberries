@@ -1,3 +1,5 @@
+#!/usr/bin/env bash
+#
 # trim.include is an include file for bash scripts,
 # it is part of the bash-dwarfs project,
 # see also https://github.com/jonelo/bash-dwarfs
