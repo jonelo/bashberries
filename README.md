@@ -18,30 +18,36 @@ update_property | Updates the value of a key/value pair in a property file      
 ### bigfiles
 
 ```
-bigfiles v1.0.2, Copyright 2017 Johann N. Loefflmann
+bigfiles v1.1.0, Copyright 2017 Johann N. Loefflmann
 
 Determines the biggest files in a directory and it's subdirectories
 
 Usage:
-    bigfiles [path [min_size [max_files]]]
+    bigfiles [-o] [-g greater] [-n max_files] [path]
 
-    path specifies the directory to be traversed.
-    If path is omitted, this help will be printed.
+Options:
+    -o           print the owners of the biggest files.
+    -g greater   a file is a big file if its file size is greater
+                 than the greater value. You may append
+                 k, M, G and T for kilo, Mega, Giga, and Tera.
+                 If greater is omitted, greater is set to 0.
 
-    min_size specifies the file size that a file must have at least in
-    order to be considered to be a big file. You may append k, M, G and T for
-    kilo, Mega, Giga, and Tera. If min_size is omitted, min_size is set to 0.
+    -n max_files specifies the maximum number of big files.
+                 If max_files is omitted or if max_files is set to 0,
+                 all files will be printed that matches min_size.
 
-    max_files specifies the maximum number of big files.
-    If max_files is omitted or if max_files is set to 0,
-    all files will be printed that matches min_size.
+Parameters:
+    path         specifies the directory to be traversed.
+                 If path is omitted, this help will be printed.
 
 Examples:
-    bigfiles . 1M
-        all files > 1 MB in the current working directory and below
+    bigfiles -g 1M .
+                 all files greater than 1 MB in the current working directory
+                 and below.
 
-    bigfiles / 1G 25
-        25 biggest files > 1 GB in / and below
+    bigfiles -o -n 25 -g 1G /
+                 25 biggest files > 1 GB in the root directory and below including
+                 a summary of the owners of those files.
 ```
 
 ### lines
