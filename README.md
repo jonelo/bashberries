@@ -8,7 +8,8 @@ If you don't set any parameters for a script, a short help will be printed.
 
 Script name     | Description                                                                |
 --------------- | -------------------------------------------------------------------------- |
-bigfiles        | determines the biggest files in a directory and it's subdirectories        |
+bigfiles        | Determines the biggest files in a directory and it's subdirectories        |
+latlng          | Determines both latitude and longitude of a location
 lines           | Extracts a block of lines from a textfile                                  |
 update_property | Updates the value of a key/value pair in a property file                   |
 
@@ -48,6 +49,30 @@ Examples:
     bigfiles -o -n 25 -g 1G /
                  25 biggest files > 1 GB in the root directory and below
                  including a summary of the owners of those files.
+```
+
+### latlng
+```
+latlng v1.0.0, Copyright 2017 Johann N. Loefflmann
+
+Determines both latitude and longitude of a location.
+The script uses the Google Maps web service.
+
+Usage:
+    latlng [-c][-i] [location]
+
+Options:
+    -c         output as one line separated by a comma
+    -i         input in interactive mode
+
+Parameters:
+    location   the location as a string
+
+Examples:
+    latlng "Statue of Liberty"
+               determines lat and lng of the Statue of Liberty
+    latlng -ic
+               reads input from the user in order to determine lat and lng
 ```
 
 ### lines
