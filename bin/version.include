@@ -27,6 +27,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# param 1: version string, e.g. 10.9.1
+# returns: a normalized version string, useful for comparisons
 function normalizedVersion() {
     printf "%03d%03d%03d%03d" $(echo "$1" | tr '.' '\n' | head -n 4)
 }
