@@ -1,0 +1,45 @@
+#!/usr/bin/env bash
+
+function urlEncode() {
+    U=$1
+    # replace the percent sign at first!
+    U=${U//%/%25}
+    # now, starting from blank ...
+    U=${U// /%20}
+    U=${U//!/%21}
+    U=${U//\"/%22} # escape required
+    U=${U//#/%23}
+    U=${U//$/%24}
+    # percent sign at first, see above
+    U=${U//&/%26}
+    U=${U//\'/%27} # escape required
+    U=${U//(/%28}
+    U=${U//)/%29}
+    U=${U//\*/%2A} # escape required
+    U=${U//+/%2B}
+    U=${U//,/%2C}
+    U=${U//-/%2D}
+    U=${U//./%2E}
+    U=${U//\//%2F} # escape required
+    U=${U//:/%3A}
+    U=${U//;/%3B}
+    U=${U//</%3C}
+    U=${U//=/%3D}
+    U=${U//>/%3E}
+    U=${U//\?/%3F} # escape required
+    U=${U//@/%40}
+    U=${U//[/%5B}
+    U=${U//\\/%5C} # escape required
+    U=${U//]/%5D}
+    U=${U//\{/%7B} # escape required
+    U=${U//|/%7C}
+    U=${U//\}/%7D} # escape required
+    # don't use printf here due to the % character
+    echo "${U}"
+}
+
+# https://de.wikipedia.org/wiki/URL-Encoding
+function _testUrlEncode() {
+    STRING=' !"#$%&'\''()*+,-./:;<=>?@[\]{|}'
+    printf "%s\n%s\n" $STRING $(urlEncode "${STRING}")
+}
