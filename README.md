@@ -6,13 +6,13 @@ If you don't set any parameters for a script, a short help will be printed.
 
 ## Overview of the dwarfs
 
-Script name     | Description                                                                |
---------------- | -------------------------------------------------------------------------- |
-bigfiles        | Determines the biggest files in a directory and it's subdirectories        |
-latlng          | Determines both latitude and longitude of a location
-lines           | Extracts a block of lines from a textfile                                  |
-update_property | Updates the value of a key/value pair in a property file                   |
-
+Script name      | Description                                                                |
+---------------- | -------------------------------------------------------------------------- |
+bigfiles         | Determines the biggest files in a directory and it's subdirectories        |
+latlng           | Determines both latitude and longitude of a location                       |
+lines            | Extracts a block of lines from a textfile                                  |
+update_property  | Updates the value of a key/value pair in a property file                   |
+update_tzupdater | Updates the tzupdater.jar                                                  |
 
 ## The bash-dwarfs in detail
 
