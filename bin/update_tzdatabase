@@ -1,0 +1,103 @@
+#!/usr/bin/env bash
+#
+# update_tzdatabase 1.0.0
+#
+# This script downloads the latest timezone data from iana.org,
+# calculates the necessary sha256 digest by calling jacksum,
+# and updates the timezone database of your Java Runtime Environment
+# by calling tzupdater.jar
+#
+# Copyright 2017 Johann N. Loefflmann
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+PATH=/bin:/usr/bin:/usr/sbin
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+
+usage() {
+cat << END
+update_tzdatabase v1.0.0, Copyright 2017 Johann N. Loefflmann
+
+Downloads the latest timezone data from iana.org, calculates the necessary
+sha256 digest by calling jacksum, and updates the timezone database of
+your Java Runtime Environment by calling tzupdater.jar
+
+Usage:
+    update_tzdatabase [-h]
+                      [-j java-binary] [-s jacksum.jar] [-t tzupdater.jar]
+
+Options:
+    -h               prints this help
+    -j java          location of the java binary.
+                     If omitted, default java is used.
+    -s jacksum.jar   location of the jacksum.jar file.
+                     If omitted, jacksum.jar is expected in the script dir.
+    -t tzupdater.jar location of the tzupdater.jar file.
+                     If omitted, tzupdater.jar is expected in the script dir.
+
+Examples:
+    update_tzdatabase
+                     updates the tzdatabase of the default JRE.
+END
+}
+
+function main() {
+    JACKSUM=${SCRIPT_DIR}/jacksum.jar
+    TZUPDATER=${SCRIPT_DIR}/tzupdater.jar
+    JAVA=java
+
+    while getopts 'hj:s:t:' OPTION
+    do
+        case $OPTION in
+        h) usage
+           exit 0
+           ;;
+        j) JAVA="$OPTARG"
+           ;;
+        t) TZUPDATER="$OPTARG"
+           ;;
+        s) JACKSUM="$OPTARG"
+           ;;
+        ?) usage
+           exit 1
+           ;;
+        esac
+    done
+    shift $(($OPTIND -1))
+
+    if ! [ -f ${JACKSUM}  ]; then
+        printf "jacksum.jar not found, download from jacksum.net\n"
+        exit 1
+    fi
+
+    if ! [ ${TZUPDATER} ]; then
+        printf "tzupdater.jar not found, run update_tzupdater in order to get it.\n"
+        exit 1
+    fi
+
+    PWD=$(pwd)
+    FILE=tzdata-latest.tar.gz
+
+    /usr/bin/curl -o "$FILE" "https://www.iana.org/time-zones/repository/$FILE"
+    "$JAVA" -jar ${JACKSUM} -a sha512 -F \#CHECKSUM "$FILE" > "$FILE".sha512
+
+    printf "Updating tzdatabase using %s\n" "$JAVA"
+    "$JAVA" -jar "${TZUPDATER}" -V
+    "$JAVA" -jar "${TZUPDATER}" -v -l "file://$PWD/$FILE"
+
+    # cleanup
+    rm "$FILE"
+    rm "$FILE".sha512
+}
+
+main "$@"
