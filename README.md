@@ -6,13 +6,14 @@ If you don't set any parameters for a script, a short help will be printed.
 
 ## Overview of the dwarfs
 
-Script name      | Description                                                                |
----------------- | -------------------------------------------------------------------------- |
-bigfiles         | Determines the biggest files in a directory and it's subdirectories        |
-latlng           | Determines both latitude and longitude of a location                       |
-lines            | Extracts a block of lines from a textfile                                  |
-update_property  | Updates the value of a key/value pair in a property file                   |
-update_tzupdater | Updates the tzupdater.jar                                                  |
+Script name      | Description                                                                    |
+---------------- | ------------------------------------------------------------------------------ |
+bigfiles         | Determines the biggest files in a directory and it's subdirectories            |
+latlng           | Determines both latitude and longitude of a location                           |
+lines            | Extracts a block of lines from a textfile                                      |
+update_property  | Updates the value of a key/value pair in a property file                       |
+update_tzdatabase| Updates the time zone database of your Java Runtime Environment                |
+update_tzupdater | Updates the tzupdater.jar                                                      |
 
 ## The bash-dwarfs in detail
 
@@ -152,4 +153,31 @@ Examples:
     update_property -f app.conf mykey "new value"
             updates the key called mykey with the value called "new value" in
             the app.conf property file in any case
+```
+
+### update_tzdatabase
+
+```
+update_tzdatabase v1.0.0, Copyright 2017 Johann N. Loefflmann
+
+Downloads the latest timezone data from iana.org, calculates the necessary
+sha256 digest by calling jacksum, and updates the timezone database of
+your Java Runtime Environment by calling tzupdater.jar
+
+Usage:
+    update_tzdatabase [-h]
+                      [-j java-binary] [-s jacksum.jar] [-t tzupdater.jar]
+
+Options:
+    -h               prints this help
+    -j java          location of the java binary.
+                     If omitted, default java is used.
+    -s jacksum.jar   location of the jacksum.jar file.
+                     If omitted, jacksum.jar is expected in the script dir.
+    -t tzupdater.jar location of the tzupdater.jar file.
+                     If omitted, tzupdater.jar is expected in the script dir.
+
+Examples:
+    update_tzdatabase
+                     updates the tzdatabase of the default JRE.
 ```
