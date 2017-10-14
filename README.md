@@ -1,20 +1,35 @@
 # bash-dwarfs
 bash-dwarfs (note the hyphen between bash and dwarfs) is a collection of tiny bash scripts (as known as a dwarf) that can do some work for you. The term has nothing to do with bashing a dwarf since bash stands for "Bourne-again shell" - one of the most famous shells for GNU/Linux and Unix systems. No dwarf was harmed in the making of this collection of scripts ;-)
 
+Not only scripts are being provided by this project, but also include files that help you to write our own bash scripts more quickly.
 All bash-dwarfs have been tested on both Ubuntu 16.04.03 LTS and macOS 10.12.6.
 If you don't set any parameters for a script, a short help will be printed.
 
-## Overview of the dwarfs
+## Overview of the bash-dwarfs
 
-Script name      | Description                                                                    |
----------------- | ------------------------------------------------------------------------------ |
-bigfiles         | Determines the biggest files in a directory and it's subdirectories            |
-latlng           | Determines both latitude and longitude of a location                           |
-lines            | Extracts a block of lines from a textfile                                      |
-update_property  | Updates the value of a key/value pair in a property file                       |
-update_tzdatabase| Updates the time zone database of your Java Runtime Environment                |
-update_tzupdater | Updates the tzupdater.jar                                                      |
+Script name         | Description                                                                    |
+------------------- | ------------------------------------------------------------------------------ |
+bigfiles            | Determines the biggest files in a directory and it's subdirectories            |
+latlng              | Determines both latitude and longitude of a location                           |
+lines               | Extracts a block of lines from a textfile                                      |
+update_property     | Updates the value of a key/value pair in a property file                       |
+update_tzdatabase   | Updates the time zone database of your Java Runtime Environment                |
+update_tzupdater    | Updates the tzupdater.jar                                                      |
 
+
+## Overview of the include files
+
+Include name        | Description                                                                    |
+------------------- | ------------------------------------------------------------------------------ |
+interaction.include | provides functions for an user interaction                                     |
+math.include        | provides mathematical functions                                                |
+network.include     | provides specific network functions                                            |
+permissions.include | provides functions that are related to permissions                             |
+proxy.include       | provides proxy related functions                                               |
+trim.include        | provides several trim functions                                                |       |
+version.include     | provides version specific functions                                            |
+ 
+                 
 ## The bash-dwarfs in detail
 
 ### bigfiles
