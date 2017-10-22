@@ -20,13 +20,41 @@
 # limitations under the License.
 
 PATH=/bin:/usr/bin:/usr/sbin
-SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+
+usage() {
+cat << END
+update_this v1.0.0, Copyright 2017 Johann N. Loefflmann
+
+Downloads the latest bash scripts from the bash-dwarfs project on github
+and updates any existing scripts in the directory that has been specified.
+
+Usage:
+    update_this <directory>
+
+Parameter:
+    directory        the directory where the scripts should be stored
+
+Examples:
+    ./update_this .
+                     updates the bash-dwarfs in the current working directory
+    bash <(curl -Ls https://goo.gl/qFmeCS) ~/bin
+                     updates the bash-dwarfs in ~/bin with just this line
+END
+}
+
+# parameters
+case $# in
+    1) TARGET=$1
+       ;;
+    *) usage
+       ;;
+esac
 
 TEMPZIP=/tmp/bash-dwarfs.$$.zip
 TEMPDIR=/tmp/bash-dwarfs.$$
 
 curl -Lo $TEMPZIP https://github.com/jonelo/bash-dwarfs/archive/master.zip
 unzip -d $TEMPDIR $TEMPZIP
-mv $TEMPDIR/bash-dwarfs-master/bin/* "$SCRIPT_DIR"
+mv $TEMPDIR/bash-dwarfs-master/bin/* "$TARGET"
 rm -R $TEMPDIR
 rm $TEMPZIP
