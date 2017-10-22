@@ -171,6 +171,28 @@ Examples:
             the app.conf property file in any case
 ```
 
+### update_this
+
+```
+update_this v1.0.0, Copyright 2017 Johann N. Loefflmann
+
+Downloads the latest bash scripts from the bash-dwarfs project on github
+and updates any existing scripts in the directory that has been specified.
+
+Usage:
+    update_this <directory>
+
+Parameter:
+    directory        the directory where the scripts should be stored
+
+Examples:
+    ./update_this .
+                     updates the bash-dwarfs in the current working directory
+    bash <(curl -Ls https://goo.gl/qFmeCS) ~/bin
+                     updates the bash-dwarfs in ~/bin with just this line
+```
+
+
 ### update_tzdatabase
 
 ```
