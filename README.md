@@ -13,6 +13,7 @@ bigfiles            | Determines the biggest files in a directory and it's subdi
 latlng              | Determines both latitude and longitude of a location                           |
 lines               | Extracts a block of lines from a textfile                                      |
 update_property     | Updates the value of a key/value pair in a property file                       |
+update_this         | Downloads all bash scripts from the bash-dwarfs project on github              |
 update_tzdatabase   | Updates the time zone database of your Java Runtime Environment                |
 update_tzupdater    | Updates the tzupdater.jar                                                      |
 
