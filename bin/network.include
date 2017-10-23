@@ -74,6 +74,8 @@ function _testUrlEncode() {
     printf "%s\n%s\n" $STRING $(urlEncode "${STRING}")
 }
 
+# opens the browser
+# param 1: url
 function openBrowser() {
   URL=$1
   OS=$(uname -s)
@@ -82,7 +84,7 @@ function openBrowser() {
           open "$URL"
           ;;
       Linux)
-          if [[ "$(uname -r)" =~ "Microsoft" ]]; then
+          if [[ "$(cat /proc/sys/kernel/osrelease)" =~ "Microsoft" ]]; then
               # We are in bash on WSL (Windows Subsystem for Linux)
               # We don't need a Linux-Browser and an X-Server,
               # we just can call iexplore.exe,
