@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
 
-# update_property 1.0.0
+# update_property 1.1.0
 # Updates the value of a key/value pair in a property file.
 #
 # It is part of the bash-dwarfs project
 # see also https://github.com/jonelo/bash-dwarfs
 #
-# Copyright 2017 Johann N. Loefflmann
+# Copyright 2017,2018 Johann N. Loefflmann
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -24,15 +24,17 @@ PATH=/bin:/usr/bin:/usr/sbin
 
 usage() {
 cat << END
-update_property v1.0.0, Copyright 2017 Johann N. Loefflmann
+update_property v1.1.0, Copyright 2017 Johann N. Loefflmann
 
 Updates the value of a key/value pair in a property file.
 The script saves existing comments and also the order of the properties.
 
 Usage:
-    update_property [-e] [-f] [-q] [file key value]
+    update_property [-d <delimiter>] [-e] [-f] [-q] [file key value]
 
 Options:
+    -d      delimiter, delimits the key and the value.
+            If omitted the equal sign is assumed.
     -e      echo the updated line of the file.
     -f      force to append the key/value pair to the file even if the key is
             not in the property file yet.
@@ -49,15 +51,16 @@ Examples:
     update_property -f app.conf mykey "new value"
             updates the key called mykey with the value called "new value" in
             the app.conf property file in any case
+    update_property -f /etc/openvpn/vpn.conf remote "my-server-1 1194"
 END
 exit 1
 }
 
 function printUpdatedValueDependentOnFlagQ {
     if [ ${qflag} -eq 1 ]; then
-        printf "%s=\"%s\"\n" "${KEY}" "${VALUE}"
+        printf "%s%s\"%s\"\n" "${KEY}" "${DELIMITER}" "${VALUE}"
     else
-        printf "%s=%s\n" "${KEY}" "${VALUE}"
+        printf "%s%s%s\n" "${KEY}" "${DELIMITER}" "${VALUE}"
     fi
 }
 
@@ -74,9 +77,12 @@ main() {
     qflag=0
     eflag=0
     fflag=0
-    while getopts 'efq' OPTION
+    DELIMITER='='
+    while getopts 'd:efq' OPTION
     do
         case $OPTION in
+        d) DELIMITER="$OPTARG"
+           ;;
         e) eflag=1
            ;;
         f) fflag=1
@@ -111,7 +117,7 @@ main() {
     while read LINE
     do
         # LINE starts with key=
-        if [[ "${LINE}" =~ ^${KEY}= ]]; then
+        if [[ "${LINE}" =~ ^${KEY}${DELIMITER} ]]; then
             # print the new key/value pair
             FOUND=1
             printUpdatedValueDependentOnFlagE

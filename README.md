@@ -2,7 +2,7 @@
 bash-dwarfs (note the hyphen between bash and dwarfs) is a collection of tiny bash scripts (as known as a dwarf) that can do some work for you. The term has nothing to do with bashing a dwarf since bash stands for "Bourne-again shell" - one of the most famous shells for GNU/Linux and Unix systems. No dwarf was harmed in the making of this collection of scripts ;-)
 
 Not only scripts are being provided by this project, but also include files that help you to write our own bash scripts more quickly.
-All bash-dwarfs have been tested on both Ubuntu 16.04.03 LTS and macOS 10.12.6.
+All bash-dwarfs have been tested on both Ubuntu 16.04.03 LTS and macOS 10.13.3.
 If you don't set any parameters for a script, a short help will be printed.
 
 ## Overview of the bash-dwarfs
@@ -144,15 +144,17 @@ Examples:
 ### update_property
 
 ```
-update_property v1.0.0, Copyright 2017 Johann N. Loefflmann
+update_property v1.1.0, Copyright 2017 Johann N. Loefflmann
 
 Updates the value of a key/value pair in a property file.
 The script saves existing comments and also the order of the properties.
 
 Usage:
-    update_property [-e] [-f] [-q] [file key value]
+    update_property [-d <delimiter>] [-e] [-f] [-q] [file key value]
 
 Options:
+    -d      delimiter, delimits the key and the value.
+            If omitted the equal sign is assumed.
     -e      echo the updated line of the file.
     -f      force to append the key/value pair to the file even if the key is
             not in the property file yet.
@@ -169,6 +171,7 @@ Examples:
     update_property -f app.conf mykey "new value"
             updates the key called mykey with the value called "new value" in
             the app.conf property file in any case
+    update_property -f /etc/openvpn/vpn.conf remote "my-server-1 1194"
 ```
 
 ### update_this
