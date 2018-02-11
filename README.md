@@ -144,7 +144,7 @@ Examples:
 ### update_property
 
 ```
-update_property v1.1.0, Copyright 2017 Johann N. Loefflmann
+update_property v1.1.0, Copyright 2017,2018 Johann N. Loefflmann
 
 Updates the value of a key/value pair in a property file.
 The script saves existing comments and also the order of the properties.
@@ -168,10 +168,13 @@ Parameters:
     value   specifies the value for the key.
 
 Examples:
-    update_property -f app.conf mykey "new value"
-            updates the key called mykey with the value called "new value" in
-            the app.conf property file in any case
-    update_property -f /etc/openvpn/vpn.conf remote "my-server-1 1194"
+    update_property -f -q app.conf mykey "new value"
+            updates the key called "mykey" with the value called "new value"
+            with quotes around the value in the app.conf property file, and
+            creates the key/value pair if the key does not exist.
+    update_property -d ' ' -e /etc/openvpn/vpn.conf remote "my-server-1 1194"
+            updates the key called "remote" in the property file that has
+            a blank as the delimiter, it also echoes the modified line.
 ```
 
 ### update_this
