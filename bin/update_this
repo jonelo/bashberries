@@ -47,6 +47,7 @@ case $# in
     1) TARGET=$1
        ;;
     *) usage
+       exit
        ;;
 esac
 
