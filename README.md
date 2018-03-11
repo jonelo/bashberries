@@ -202,7 +202,7 @@ Examples:
 ### update_tzdatabase
 
 ```
-update_tzdatabase v1.0.0, Copyright 2017 Johann N. Loefflmann
+update_tzdatabase v1.0.1, Copyright 2017-2018 Johann N. Loefflmann
 
 Downloads the latest timezone data from iana.org, calculates the necessary
 sha256 digest by calling jacksum, and updates the timezone database of
