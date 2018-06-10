@@ -12,6 +12,7 @@ Script name         | Description                                               
 bigfiles            | Determines the biggest files in a directory and it's subdirectories            |
 latlng              | Determines both latitude and longitude of a location                           |
 lines               | Extracts a block of lines from a textfile                                      |
+update_jre          | Downloads the latests JRE from the web, extracts it and creates a symlink      |
 update_property     | Updates the value of a key/value pair in a property file                       |
 update_this         | Downloads all bash scripts from the bash-dwarfs project on github              |
 update_tzdatabase   | Updates the time zone database of your Java Runtime Environment                |
@@ -27,7 +28,7 @@ math.include        | provides mathematical functions                           
 network.include     | provides specific network functions                                            |
 permissions.include | provides functions that are related to permissions                             |
 proxy.include       | provides proxy related functions                                               |
-trim.include        | provides several trim functions                                                |       |
+trim.include        | provides several trim functions                                                |
 version.include     | provides version specific functions                                            |
  
                  
@@ -141,8 +142,41 @@ Examples:
                that last ending line
 ```
 
-### update_property
+### update_jre
+```
+update_jre v1.0.0, Copyright 2018 Johann N. Loefflmann
 
+Downloads the latest JRE tarball from the web, extracts it and
+creates a symlink called jre_latest.
+
+Usage:
+    update_jre -a [path]
+
+Options:
+    -a      accept license. That is a required option.
+            Please read the license at
+            www.oracle.com/technetwork/java/javase/terms/license/index.html
+            and allow the script to download the JRE by specifying this option.
+
+    -k      keep the downloaded .tar.gz, don't remove it at the end.
+
+    -f      force. Even if we have the JRE already, update it again.
+
+Parameters:
+    path    specifies the path where the JRE should be stored.
+            It will be created if it doesn't exist.
+            If omitted, .jre/ will be used.
+
+Examples:
+    update_jre -a
+            updates the JRE in ./jre/ and it creates a symlink there.
+    update_jre -a /opt/java/jre
+            updates the JRE in /opt/java/jre/ and it creates a symlink there.
+
+```
+
+
+### update_property
 ```
 update_property v1.1.0, Copyright 2017,2018 Johann N. Loefflmann
 
@@ -178,7 +212,6 @@ Examples:
 ```
 
 ### update_this
-
 ```
 update_this v1.0.0, Copyright 2017 Johann N. Loefflmann
 

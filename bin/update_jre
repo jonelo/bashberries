@@ -31,7 +31,8 @@ usage() {
 cat << END
 update_jre v1.0.0, Copyright 2018 Johann N. Loefflmann
 
-Downloads the latest JRE from the web and creates a symlink called jre_latest
+Downloads the latest JRE tarball from the web, extracts it and
+creates a symlink called jre_latest.
 
 Usage:
     update_jre -a [path]
