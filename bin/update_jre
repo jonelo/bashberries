@@ -35,7 +35,7 @@ Downloads the latest JRE tarball from the web, extracts it and
 creates a symlink called jre_latest.
 
 Usage:
-    update_jre -a [path]
+    update_jre [ [-h] | -a [-f] [-k] ] [path]
 
 Options:
     -a      accept license. That is a required option.
@@ -43,9 +43,12 @@ Options:
             www.oracle.com/technetwork/java/javase/terms/license/index.html
             and allow the script to download the JRE by specifying this option.
 
+    -f      force. Even if we have the JRE already, update it again.
+
+    -h      prints this help.
+
     -k      keep the downloaded .tar.gz, don't remove it at the end.
 
-    -f      force. Even if we have the JRE already, update it again.
 
 Parameters:
     path    specifies the path where the JRE should be stored.
