@@ -1,0 +1,243 @@
+#!/usr/bin/env bash
+#
+# update_jre 1.0.0
+#
+# This script downloads the latest tzupdater from oracle.com and
+# updates the tzupdater.jar in the directory where this script is stored.
+# The script accepts the license at
+# http://www.oracle.com/technetwork/java/javase/terms/license/index.html
+# for you. Please don't run the script if you don't agree with it.
+#
+# Copyright 2018 Johann N. Loefflmann
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# Explicitly set the PATH
+PATH="/sbin:/usr/sbin:/bin:/usr/bin"
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+
+
+usage() {
+cat << END
+update_jre v1.0.0, Copyright 2018 Johann N. Loefflmann
+
+Downloads the latest JRE from the web and creates a symlink called jre_latest
+
+Usage:
+    update_jre -a [path]
+
+Options:
+    -a      required option. You have read the license at
+            www.oracle.com/technetwork/java/javase/terms/license/index.html
+            and you allow the script to download the JRE.
+
+Parameters:
+    path    specifies the path where the JRE should be stored.
+            It will be created if it doesn't exist.
+            If omitted, .jre/ will be used.
+
+Examples:
+    update_jre -a
+            updates the JRE in ./jre/ and it creates a symlink there.
+    update_jre -a /opt/java/jre
+            updates the JRE in /opt/java/jre/ and it creates a symlink there.
+END
+exit 0
+}
+
+function detectOStag() {
+    # What OS are we running on?
+    OS=$(uname -s)
+    case "$OS" in
+        Darwin)
+            OS_TAG="osx"
+            ;;
+        Linux)
+            OS_TAG="linux"
+            ;;
+        Solaris)
+            OS_TAG="solaris"
+            ;;
+        *)
+            printf "Not supported on %s\n" "$OS"
+            exit 1
+            ;;
+    esac
+}
+
+function licenseAcceptedRequired() {
+    if [ $ACCEPT -eq 0 ]; then
+cat << EOM
+
+ERROR: In order to allow this script to download the JRE, please read and
+       accept the license at
+
+       http://www.oracle.com/technetwork/java/javase/terms/license/index.html
+
+       by specifying the -a option to this script.
+
+       Use option -h to get more help.
+
+EOM
+        exit 1
+    fi
+
+}
+
+function main() {
+    detectOStag
+
+    # options
+    ACCEPT=0
+    while getopts ':h' OPTION
+    do
+        case $OPTION in
+            a) ACCEPT=1
+               ;;
+            h) usage
+               ;;
+            ?) printf "ERROR: Option -%s is not a supported option.\n" $OPTARG
+               exit 1
+               ;;
+        esac
+    done
+    shift $(($OPTIND -1))
+    licenseAcceptedRequired
+
+    TARGET_DIR="${SCRIPT_DIR}/.jre"
+    # parameters
+    case $# in
+        1) TARGET_DIR="$1"
+           ;;
+        *) printf "ERROR: none or one parameters are supported\n"
+           ;;
+    esac
+
+    VERSION_FILE="${TARGET_DIR}/jre.version"
+
+    # create the configuration directory
+    if [ ! -d "${TARGET_DIR}" ]; then
+        printf "Making directory: %s\n" "${TARGET_DIR}"
+        mkdir -p "${TARGET_DIR}"
+    fi
+
+    WEBSITE=http://www.oracle.com/technetwork/java/javase/downloads/index.html
+    # Download the onestop Java download webpage and store it in the $HTML variable
+    echo "Checking for new JRE on the onestop ..."
+    echo "Downloading $WEBSITE ..."
+    TEMP_FILE=/tmp/jre_onestop.html.$$
+    if [ -f "$TEMP_FILE" ]; then
+        rm "$TEMP_FILE"
+    fi
+    curl -o "$TEMP_FILE" "$WEBSITE"
+    if [ -f "$TEMP_FILE" ]; then
+        HTML=$(<"$TEMP_FILE")
+        rm "$TEMP_FILE"
+    else
+        printf "FATAL: Download of webpage %s failed. Please check your internet connection.\n" "$WEBSITE"
+        exit 1
+    fi
+
+    REGEX='href=\"([^\"]+)\"([^>]+)>[[:space:]]*<img[[:space:]]+alt=\"Download[[:space:]]JRE\"'
+    # Find the actual JRE download page
+    # e.g. <a href="/technetwork/java/javase/downloads/jre10-downloads-4417026.html" target=""><img alt="Download JRE"
+    if [[ "$HTML" =~ $REGEX ]]; then
+        FOUND_ADDRESS=${BASH_REMATCH[1]}
+        DOWNLOAD_ADDRESS="http://www.oracle.com/${FOUND_ADDRESS}"
+        # e.g. http://www.oracle.com/technetwork/java/javase/downloads/jre10-downloads-4417026.html
+        printf "INFO: Found %s\n      in %s\n" ${FOUND_ADDRESS} ${WEBSITE}
+    else
+        printf "FATAL: Actual download address was not found in content of %s\n" ${WEBSITE}
+        exit 1
+    fi
+
+    WEBSITE=$DOWNLOAD_ADDRESS
+    echo "Checking for new JRE ..."
+    echo "Downloading $DOWNLOAD_ADDRESS ..."
+    TEMP_FILE=/tmp/jre.html.$$
+    if [ -f "$TEMP_FILE" ]; then
+        rm "$TEMP_FILE"
+    fi
+    curl -o "$TEMP_FILE" "$WEBSITE"
+    if [ -f "$TEMP_FILE" ]; then
+        HTML=$(<"$TEMP_FILE")
+        rm "$TEMP_FILE"
+    else
+        printf "FATAL: Download of webpage %s failed. Please check your internet connection.\n" "$WEBSITE"
+        exit 1
+    fi
+
+    #  Parse for the .tar.gz file
+    if [[ "$HTML" =~ (http://download.oracle.com/otn-pub/java/[^_]+_${OS_TAG}[^\.]+\.tar.\gz)\" ]]; then
+        FOUND_ADDRESS="${BASH_REMATCH[1]}"
+        DOWNLOAD_ADDRESS="${FOUND_ADDRESS}"
+        # e.g. http://download.oracle.com/otn-pub/java/jdk/10.0.1+10/fb4372174a714e6b8c52526dc134031e/jre-10.0.1_linux-x64_bin.tar.gz
+        printf "INFO: Found %s\n      in %s\n" ${FOUND_ADDRESS} ${WEBSITE}
+    else
+        printf "FATAL: Actual download address was not found in content of %s\n" ${WEBSITE}
+        exit 1
+    fi
+
+    THE_TAR_GZ=${DOWNLOAD_ADDRESS##*/}
+    # Do we need to download the file actually?
+    # Let's check what we have downloaded in the past
+    if [ ! -f "${THE_TAR_GZ}" ] || [ ! -f "${VERSION_FILE}" ]; then
+       printf "%s\n" "none" > "${VERSION_FILE}"
+    fi
+    WEHAVE=$(<"${VERSION_FILE}")
+
+    if [ "$DOWNLOAD_ADDRESS" != "$WEHAVE" ]; then
+       printf "Downloading %s ...\n" $DOWNLOAD_ADDRESS
+       if [ -f "${THE_TAR_GZ}" ]; then
+           rm "${THE_TAR_GZ}"
+       fi
+       curl -o "${THE_TAR_GZ}" -j -k -L -H "Cookie: oraclelicense=accept-securebackup-cookie" $DOWNLOAD_ADDRESS
+       if [ -f "${THE_TAR_GZ}" ]; then
+
+           printf "%s\n" "${DOWNLOAD_ADDRESS}" > "${VERSION_FILE}"
+
+           echo "Extracting the .tar.gz file ..."
+           gunzip < ${THE_TAR_GZ} | tar xfv - -C ${TARGET_DIR}
+
+           # relative symlink preferred
+           BACKUP=$(pwd)
+           cd "${TARGET_DIR}"
+
+           # find the just created jre folder (faster than to search again in the .tar.gz)
+           # by finding java and extracting the folder from that line
+           unset -v LATEST
+           for FILE in $(find . -name java); do
+               [[ $FILE -nt $LATEST ]] && LATEST=$FILE
+           done
+           LATEST=${LATEST%/*} # remove /java from the string
+           LATEST=${LATEST%/*} # remove /bin from the string
+
+           # update the symlink
+           rm jre_latest 2> /dev/null
+           ln -s $LATEST jre_latest
+
+           # restore the folder
+           cd "${BACKUP}"
+
+           echo "Clean up ..."
+           rm "${THE_TAR_GZ}"
+       else
+           printf "FATAL: Download failed.\n"
+           exit 1
+       fi
+    else
+       printf "Skipping download, because we have %s already.\n" $DOWNLOAD_ADDRESS
+    fi
+}
+
+main "$@"
