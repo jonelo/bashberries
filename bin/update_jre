@@ -44,7 +44,7 @@ Options:
 
     -k      keep the downloaded .tar.gz, don't remove it at the end.
 
-    -f      even if we have the JRE already, update it again.
+    -f      force. Even if we have the JRE already, update it again.
 
 Parameters:
     path    specifies the path where the JRE should be stored.
