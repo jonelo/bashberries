@@ -45,7 +45,7 @@ Options:
             http://www.oracle.com/technetwork/java/javasebusiness/downloads/tzupdater-lic-354297.txt
             and allow the script to download the package by specifying this option.
 
-    -d      dry run. Don't download the JRE or JDK, just inform me.
+    -d      dry run. Don't download the JRE or JDK or tzupdater, just inform me.
 
     -f      force. Even if we have the JRE already, update it again.
 
@@ -163,7 +163,7 @@ function main() {
     FORCE=0
     KEEP=0
     TYPE="jre"
-    while getopts ':afkht:d' OPTION
+    while getopts ':afkht:dv' OPTION
     do
         case $OPTION in
             a) ACCEPT=1
@@ -187,6 +187,9 @@ function main() {
                    printf "ERROR: a JDK .tar.gz is not supported on macOS.\n" "$TYPE"
                    exit 1
                fi
+               ;;
+            v) printf "%s\n" "$SCRIPT_VERSION"
+               exit 0
                ;;
             h) usage
                ;;
