@@ -243,18 +243,18 @@ Examples:
 ### update_tzdatabase
 
 ```
-update_tzdatabase v1.0.1, Copyright 2017-2018 Johann N. Loefflmann
+update_tzdatabase v1.0.2, Copyright 2017-2018 Johann N. Loefflmann
 
 Downloads the latest timezone data from iana.org, calculates the necessary
 sha256 digest by calling jacksum, and updates the timezone database of
 your Java Runtime Environment by calling tzupdater.jar
 
 Usage:
-    update_tzdatabase [-h]
-                      [-j java-binary] [-s jacksum.jar] [-t tzupdater.jar]
+    update_tzdatabase [ [-h] |
+                        [-j java-binary] [-s jacksum.jar] [-t tzupdater.jar] ]
 
 Options:
-    -h               prints this help
+    -h               prints this help.
     -j java          location of the java binary.
                      If omitted, default java is used.
     -s jacksum.jar   location of the jacksum.jar file.
@@ -265,4 +265,7 @@ Options:
 Examples:
     update_tzdatabase
                      updates the tzdatabase of the default JRE.
+    sudo ./update_tzdatabase -j \$(type -P java)
+                     updates the tzdatabase of the default JRE using root
+                     permissions.
 ```

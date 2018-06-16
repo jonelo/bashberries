@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
 #
-# update_tzdatabase 1.0.1
+# update_tzdatabase 1.0.2
 #
 # This script downloads the latest timezone data from iana.org,
 # calculates the necessary sha256 digest by calling jacksum,
 # and updates the timezone database of your Java Runtime Environment
 # by calling tzupdater.jar
 #
-# Copyright 2017 Johann N. Loefflmann
+# Copyright 2017-2018 Johann N. Loefflmann
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -21,23 +21,23 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-PATH=/bin:/usr/bin:/usr/sbin
+#PATH=/bin:/usr/bin:/usr/sbin
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 
 usage() {
 cat << END
-update_tzdatabase v1.0.1, Copyright 2017-2018 Johann N. Loefflmann
+update_tzdatabase v1.0.2, Copyright 2017-2018 Johann N. Loefflmann
 
 Downloads the latest timezone data from iana.org, calculates the necessary
 sha256 digest by calling jacksum, and updates the timezone database of
 your Java Runtime Environment by calling tzupdater.jar
 
 Usage:
-    update_tzdatabase [-h]
-                      [-j java-binary] [-s jacksum.jar] [-t tzupdater.jar]
+    update_tzdatabase [ [-h] |
+                        [-j java-binary] [-s jacksum.jar] [-t tzupdater.jar] ]
 
 Options:
-    -h               prints this help
+    -h               prints this help.
     -j java          location of the java binary.
                      If omitted, default java is used.
     -s jacksum.jar   location of the jacksum.jar file.
@@ -48,13 +48,16 @@ Options:
 Examples:
     update_tzdatabase
                      updates the tzdatabase of the default JRE.
+    sudo ./update_tzdatabase -j \$(type -P java)
+                     updates the tzdatabase of the default JRE using root
+                     permissions.
 END
 }
 
 function main() {
     JACKSUM=${SCRIPT_DIR}/jacksum.jar
     TZUPDATER=${SCRIPT_DIR}/tzupdater.jar
-    JAVA=java
+    JAVA=$(type -P java)
 
     while getopts 'hj:s:t:' OPTION
     do
@@ -75,13 +78,18 @@ function main() {
     done
     shift $(($OPTIND -1))
 
-    if ! [ -f ${JACKSUM}  ]; then
-        printf "jacksum.jar not found, download from jacksum.net\n"
+    if [ ! -f "${JAVA}" ]; then
+        printf "FATAL: binary %s not found, please specify the path to the java binary.\n" "${JAVA}"
         exit 1
     fi
 
-    if ! [ ${TZUPDATER} ]; then
-        printf "tzupdater.jar not found, run update_tzupdater in order to get it.\n"
+    if [ ! -f "${JACKSUM}" ]; then
+        printf "FATAL: jacksum.jar not found, download from jacksum.net\n"
+        exit 1
+    fi
+
+    if [ ! "${TZUPDATER}" ]; then
+        printf "FATAL: tzupdater.jar not found, run update_tzupdater in order to get it.\n"
         exit 1
     fi
 
