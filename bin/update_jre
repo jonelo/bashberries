@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #
 # update_jre
-SCRIPT_VERSION=1.2.0
+SCRIPT_VERSION=1.3.0
 #
 # This script downloads the latest JRE, Server JRE, JDK or tzupdater
 # from oracle.com. Use option -a to accept Oracle's binary license.
@@ -58,6 +58,9 @@ Options:
 
     -v      version. Prints out the version of this script.
 
+    -z      after the JRE or JDK has been downloaded and extracted, the
+            latest tzupdater will be downloaded and applied to the JRE or JDK.
+
 Parameters:
     path    specifies the path where the JRE, JDK or tzupdater should be stored.
             It will be created if it doesn't exist.
@@ -67,11 +70,16 @@ Examples:
     update_jre -a
             updates the JRE in ./jre/ and it creates a symlink called
             jre_latest there.
+    update_jre -az myjres
+            updates the JRE in myjres and it updates the symlink called
+            jre_latest there. Additionally the latest timezone updater
+            is being downloaded and called so that the JRE's timezone database
+            also gets updated.
     update_jre -a -t jdk /opt/java/
-            updates the JDK in /opt/java/ and it creates a symlink
+            updates the JDK in /opt/java/ and it updates a symlink
             called jdk_latest there.
     update_jre -a -t tzupdater /opt/java/
-            updates the tzupdater in /opt/java/ and it creates a symlink
+            updates the tzupdater in /opt/java/ and it updates a symlink
             called tzupdater.jar there.
 END
 exit 0
@@ -162,8 +170,9 @@ function main() {
     DRYRUN=0
     FORCE=0
     KEEP=0
+    ZOPTION=0
     TYPE="jre"
-    while getopts ':afkht:dv' OPTION
+    while getopts ':afkht:dvz' OPTION
     do
         case $OPTION in
             a) ACCEPT=1
@@ -191,6 +200,8 @@ function main() {
             v) printf "%s\n" "$SCRIPT_VERSION"
                exit 0
                ;;
+            z) ZOPTION=1
+               ;;
             h) usage
                ;;
             ?) printf "ERROR: Option -%s is not a supported option.\n" "$OPTARG"
@@ -212,6 +223,11 @@ function main() {
            ;;
     esac
 
+    # jre, sjre or jdk with -z option is wanted
+    if [ "$TYPE" != "tzupdater" ] && [ $ZOPTION -eq 1 ]; then
+        # get the tzupdater
+        "${SCRIPT_DIR}/update_jre" -a -t tzupdater "$TARGET_DIR"
+    fi
 
     VERSION_FILE="${TARGET_DIR}/${TYPE}.version"
     TEMP_FILE=/tmp/update_${TYPE}.$$
@@ -316,6 +332,13 @@ function main() {
                printf "Clean up ...\n"
                rm "${ARCHIVE_FILE}"
            fi
+
+           # jre, sjre or jdk with -z option is wanted
+           if [ "$TYPE" != "tzupdater" ] && [ $ZOPTION -eq 1 ]; then
+               # call the tzupdater by using the java binary from the JRE/JDK that we have just downloaded
+               "${TARGET_DIR}/${TYPE}_latest/bin/java" -jar "${TARGET_DIR}/tzupdater.jar" -v -l
+           fi
+
        else
            printf "FATAL: Download failed.\n"
            exit 1
