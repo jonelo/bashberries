@@ -1,12 +1,11 @@
 #!/usr/bin/env bash
 #
-# update_jre 1.1.0
+# update_jre
+SCRIPT_VERSION=1.2.0
 #
-# This script downloads the latest tzupdater from oracle.com and
-# updates the tzupdater.jar in the directory where this script is stored.
-# The script accepts the license at
-# http://www.oracle.com/technetwork/java/javase/terms/license/index.html
-# for you. Please don't run the script if you don't agree with it.
+# This script downloads the latest JRE, Server JRE, JDK or tzupdater
+# from oracle.com. Use option -a to accept Oracle's binary license.
+# Without that option, this script won't do the job.
 #
 # Copyright 2018 Johann N. Loefflmann
 #
@@ -26,22 +25,25 @@
 PATH="/sbin:/usr/sbin:/bin:/usr/bin"
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 
-
 usage() {
 cat << END
-update_jre v1.1.0, Copyright 2018 Johann N. Loefflmann
+update_jre v${SCRIPT_VERSION}, Copyright 2018 Johann N. Loefflmann
 
-Downloads the latest JRE or JDK tarball from the web, extracts it and
-creates a symlink called jre_latest resp. jdk_latest.
+Downloads the latest JRE, Server JRE, or JDK tarball resp. the latest
+tzupdater zip from the web, extracts it and creates a symlink called
+jre_latest, sjre_latest, jdk_latest or tzupdater.jar.
 
 Usage:
     update_jre [ [-h] | -a [-d] [-f] [-k] [-t type] [path] ]
 
 Options:
     -a      accept license. That is a required option if you want to
-            download the JRE or JDK from the site. Please read the license at
+            download the JRE, JDK or tzupdater from the Oracle site.
+            Please read the license at
             www.oracle.com/technetwork/java/javase/terms/license/index.html
-            and allow the script to download the JRE by specifying this option.
+            resp. at
+            http://www.oracle.com/technetwork/java/javasebusiness/downloads/tzupdater-lic-354297.txt
+            and allow the script to download the package by specifying this option.
 
     -d      dry run. Don't download the JRE or JDK, just inform me.
 
@@ -49,22 +51,28 @@ Options:
 
     -h      prints this help.
 
-    -k      keep the downloaded .tar.gz, don't remove it at the end.
+    -k      keep the downloaded .tar.gz resp. .zip, don't remove it at the end.
 
-    -t      type. Can be jre (the JRE), sjre (server JRE) or jdk (the JDK).
+    -t      type. Can be jre (the JRE), sjre (server JRE), jdk (the JDK) or
+            tzupdater.
+
+    -v      version. Prints out the version of this script.
 
 Parameters:
-    path    specifies the path where the JRE should be stored.
+    path    specifies the path where the JRE, JDK or tzupdater should be stored.
             It will be created if it doesn't exist.
-            If omitted, .jre/ will be used.
+            If omitted, .jre/, .sjre/, .jdk/, or .tzupdater/ will be used.
 
 Examples:
     update_jre -a
             updates the JRE in ./jre/ and it creates a symlink called
             jre_latest there.
-    update_jre -a -t jdk /opt/java/jdk
-            updates the JDK in /opt/java/jdk/ and it creates a symlink
+    update_jre -a -t jdk /opt/java/
+            updates the JDK in /opt/java/ and it creates a symlink
             called jdk_latest there.
+    update_jre -a -t tzupdater /opt/java/
+            updates the tzupdater in /opt/java/ and it creates a symlink
+            called tzupdater.jar there.
 END
 exit 0
 }
@@ -93,11 +101,14 @@ function licenseAcceptedRequired() {
     if [ $1 -eq 0 ]; then
 cat << EOM
 
-ERROR: In order to allow this script to download the JRE, please read and
-       accept the license at
-
+ERROR: In order to allow this script to download the latest JRE, Server JRE or JDK,
+       please read and accept the license at
        http://www.oracle.com/technetwork/java/javase/terms/license/index.html
+       by specifying the -a option to this script.
 
+       In order to allow this script to download the latest tzupdater,
+       please read and accept the license at
+       http://www.oracle.com/technetwork/java/javasebusiness/downloads/tzupdater-lic-354297.txt
        by specifying the -a option to this script.
 
        Use option -h to get more help.
@@ -105,7 +116,6 @@ ERROR: In order to allow this script to download the JRE, please read and
 EOM
         exit 1
     fi
-
 }
 
 # Download a webpage and store it to a file
@@ -165,7 +175,7 @@ function main() {
             k) KEEP=1
                ;;
             t) TYPE="$OPTARG"
-	           if [ "$TYPE" != "jre" ] && [ "$TYPE" != "sjre" ] && [ "$TYPE" != "jdk" ]; then
+	           if [ "$TYPE" != "jre" ] && [ "$TYPE" != "sjre" ] && [ "$TYPE" != "jdk" ] && [ "$TYPE" != "tzupdater" ]; then
                    printf "ERROR: -t %s is not supported.\n" "$TYPE"
                    exit 1
                fi
@@ -211,24 +221,33 @@ function main() {
 
     printf "INFO: Checking for new %s on the Java onestop page ...\n" $TYPE
 
-    DOWNLOAD_ADDRESS="http://www.oracle.com/technetwork/java/javase/downloads/index.html"
-    downloadWebsite "$DOWNLOAD_ADDRESS" "$TEMP_FILE"
-    # Find the actual JRE/JDK download page
-    # e.g. <a href="/technetwork/java/javase/downloads/jre10-downloads-4417026.html" target=""><img alt="Download JRE"
-    #      <a align="center" target="" href="/technetwork/java/javase/downloads/sjre10-downloads-4417025.html"><img alt="Download JDK"
-    #      <a href="/technetwork/java/javase/downloads/jdk10-downloads-4416644.html" target=""><img alt="Download JDK"
-    REGEX='href=\"(/technetwork/java/javase/downloads/'${TYPE}'[^\"]+)\"([^>]*)>[[:space:]]*<img[[:space:]]+alt=\"Download[[:space:]]'
-    parseFile "$TEMP_FILE" $REGEX
+    if [ $TYPE = "tzupdater" ]; then
+        DOWNLOAD_ADDRESS="http://www.oracle.com/technetwork/java/javase/downloads/tzupdater-download-513681.html"
+        downloadWebsite "$DOWNLOAD_ADDRESS" "$TEMP_FILE"
+        # Find the address to the tzupdater .zip file
+        # e.g. http://download.oracle.com/otn-pub/java/tzupdater/2.1.0/tzupdater-2_1_0.zip
+        REGEX='(http://download.oracle.com/otn-pub/java/tzupdater/[^\"]+)\"'
+        parseFile "$TEMP_FILE" $REGEX
+    else # jre, sjre or jdk
+        DOWNLOAD_ADDRESS="http://www.oracle.com/technetwork/java/javase/downloads/index.html"
+        downloadWebsite "$DOWNLOAD_ADDRESS" "$TEMP_FILE"
+        # Find the actual JRE/JDK download page
+        # e.g. <a href="/technetwork/java/javase/downloads/jre10-downloads-4417026.html" target=""><img alt="Download JRE"
+        #      <a align="center" target="" href="/technetwork/java/javase/downloads/sjre10-downloads-4417025.html"><img alt="Download JDK"
+        #      <a href="/technetwork/java/javase/downloads/jdk10-downloads-4416644.html" target=""><img alt="Download JDK"
+        REGEX='href=\"(/technetwork/java/javase/downloads/'${TYPE}'[^\"]+)\"([^>]*)>[[:space:]]*<img[[:space:]]+alt=\"Download[[:space:]]'
+        parseFile "$TEMP_FILE" $REGEX
 
-    DOWNLOAD_ADDRESS="http://www.oracle.com/${FOUND_ADDRESS}"
-    downloadWebsite "$DOWNLOAD_ADDRESS" "$TEMP_FILE"
-    #  Parse for the .tar.gz file
-    # e.g. http://download.oracle.com/otn-pub/java/jdk/10.0.1+10/fb4372174a714e6b8c52526dc134031e/jre-10.0.1_linux-x64_bin.tar.gz
-    REGEX='(http://download.oracle.com/otn-pub/java/[^_]+_'${OS_TAG}'[^\.]+\.tar.\gz)\"'
-    parseFile "$TEMP_FILE" $REGEX
+        DOWNLOAD_ADDRESS="http://www.oracle.com/${FOUND_ADDRESS}"
+        downloadWebsite "$DOWNLOAD_ADDRESS" "$TEMP_FILE"
+        #  Parse for the .tar.gz file
+        # e.g. http://download.oracle.com/otn-pub/java/jdk/10.0.1+10/fb4372174a714e6b8c52526dc134031e/jre-10.0.1_linux-x64_bin.tar.gz
+        REGEX='(http://download.oracle.com/otn-pub/java/[^_]+_'${OS_TAG}'[^\.]+\.tar.\gz)\"'
+        parseFile "$TEMP_FILE" $REGEX
+    fi
 
     DOWNLOAD_ADDRESS="${FOUND_ADDRESS}"
-    THE_TAR_GZ="${TARGET_DIR}/${DOWNLOAD_ADDRESS##*/}"
+    ARCHIVE_FILE="${TARGET_DIR}/${DOWNLOAD_ADDRESS##*/}"
 
     # cleanup
     rm "$TEMP_FILE" 2> /dev/null
@@ -242,44 +261,57 @@ function main() {
 
     if [ "$DOWNLOAD_ADDRESS" != "$WEHAVE" ] || [ $FORCE -eq 1 ]; then
        if [ $DRYRUN -eq 1 ]; then
-           printf "INFO: DRY RUN: Would download %s and would save it to %s.\n" "$DOWNLOAD_ADDRESS" "$THE_TAR_GZ"
+           printf "INFO: DRY RUN: Would download %s and would save it to %s.\n" "$DOWNLOAD_ADDRESS" "$ARCHIVE_FILE"
            exit 0
        fi
        printf "Downloading %s ...\n" "$DOWNLOAD_ADDRESS"
-       if [ -f "${THE_TAR_GZ}" ]; then
-           rm "${THE_TAR_GZ}"
+       if [ -f "${ARCHIVE_FILE}" ]; then
+           rm "${ARCHIVE_FILE}"
        fi
-       curl -o "${THE_TAR_GZ}" -j -k -L -H "Cookie: oraclelicense=accept-securebackup-cookie" $DOWNLOAD_ADDRESS
-       if [ -f "${THE_TAR_GZ}" ]; then
+       curl -o "${ARCHIVE_FILE}" -j -k -L -H "Cookie: oraclelicense=accept-securebackup-cookie" "$DOWNLOAD_ADDRESS"
+       if [ -f "${ARCHIVE_FILE}" ]; then
 
            printf "%s\n" "${DOWNLOAD_ADDRESS}" > "${VERSION_FILE}"
 
-           echo "Extracting the .tar.gz file ..."
-           gunzip < "${THE_TAR_GZ}" | tar xfv - -C "${TARGET_DIR}"
+           printf "Extracting the file %s ...\n" "${ARCHIVE_FILE}"
+           if [ $TYPE = "tzupdater" ]; then
+               # find the path of the latest tzupdater by searching in the .zip file
+               LATEST=$(unzip -l "${ARCHIVE_FILE}" | grep tzupdater.jar)
+               LATEST=${LATEST##* }
+               # extracting the .zip
+               unzip -d "${TARGET_DIR}" -o "${ARCHIVE_FILE}"
+           else
+               gunzip < "${ARCHIVE_FILE}" | tar xfv - -C "${TARGET_DIR}"
+           fi
 
            # relative symlink preferred
            BACKUP=$(pwd)
            cd "${TARGET_DIR}"
 
-           # find the java binary in the just created folder (it is faster than to search again in the .tar.gz)
-           unset -v LATEST
-           for FILE in $(find . -name java); do
-               [[ $FILE -nt $LATEST ]] && LATEST=$FILE
-           done
-           # extract the path from the .../bin/java string
-           LATEST=${LATEST%/*} # remove /java from the string
-           LATEST=${LATEST%/*} # remove /bin from the string
+           if [ $TYPE = "tzupdater" ]; then
+               SYMLINK="${TYPE}.jar"
+           else
+               # find the java binary in the just created folder, because it is faster than to search in the .tar.gz
+               unset -v LATEST
+               for FILE in $(find . -name java); do
+                   [[ $FILE -nt $LATEST ]] && LATEST=$FILE
+               done
+               # extract the path from the .../bin/java string
+               LATEST=${LATEST%/*} # remove /java from the string
+               LATEST=${LATEST%/*} # remove /bin from the string
 
+               SYMLINK="${TYPE}_latest"
+           fi
            # update the symlink
-           rm "${TYPE}_latest" 2> /dev/null
-           ln -s $LATEST "${TYPE}_latest"
+           rm "${SYMLINK}" 2> /dev/null
+           ln -s "${LATEST}" "${SYMLINK}"
 
            # restore the folder
            cd "${BACKUP}"
 
            if [ $KEEP -eq 0 ]; then
                printf "Clean up ...\n"
-               rm "${THE_TAR_GZ}"
+               rm "${ARCHIVE_FILE}"
            fi
        else
            printf "FATAL: Download failed.\n"
