@@ -16,7 +16,7 @@ update_jre          | Downloads the latests JRE from the web, extracts it and cr
 update_property     | Updates the value of a key/value pair in a property file                       |
 update_this         | Downloads all bash scripts from the bash-dwarfs project on github              |
 update_tzdatabase   | Updates the time zone database of your Java Runtime Environment                |
-update_tzupdater    | Updates the tzupdater.jar                                                      |
+update_tzupdater    | Updates the tzupdater.jar by calling update_jre -t tzupdater                   |
 
 
 ## Overview of the include files
