@@ -144,7 +144,7 @@ Examples:
 
 ### update_jre
 ```
-update_jre v1.2.0, Copyright 2018 Johann N. Loefflmann
+update_jre v1.3.0, Copyright 2018 Johann N. Loefflmann
 
 Downloads the latest JRE, Server JRE, or JDK tarball resp. the latest
 tzupdater zip from the web, extracts it and creates a symlink called
@@ -159,11 +159,10 @@ Options:
             Please read the license at
             www.oracle.com/technetwork/java/javase/terms/license/index.html
             resp. at
-            http://www.oracle.com/technetwork/java/javasebusiness/downloads/
-            tzupdater-lic-354297.txt
+            http://www.oracle.com/technetwork/java/javasebusiness/downloads/tzupdater-lic-354297.txt
             and allow the script to download the package by specifying this option.
 
-    -d      dry run. Don't download the JRE or JDK, just inform me.
+    -d      dry run. Don't download the JRE or JDK or tzupdater, just inform me.
 
     -f      force. Even if we have the JRE already, update it again.
 
@@ -176,6 +175,9 @@ Options:
 
     -v      version. Prints out the version of this script.
 
+    -z      after the JRE or JDK has been downloaded and extracted, the
+            latest tzupdater will be downloaded and applied to the JRE or JDK.
+
 Parameters:
     path    specifies the path where the JRE, JDK or tzupdater should be stored.
             It will be created if it doesn't exist.
@@ -185,13 +187,17 @@ Examples:
     update_jre -a
             updates the JRE in ./jre/ and it creates a symlink called
             jre_latest there.
+    update_jre -az myjres
+            updates the JRE in myjres and it updates the symlink called
+            jre_latest there. Additionally the latest timezone updater
+            is being downloaded and called so that the JRE's timezone database
+            also gets updated.
     update_jre -a -t jdk /opt/java/
-            updates the JDK in /opt/java/ and it creates a symlink
+            updates the JDK in /opt/java/ and it updates a symlink
             called jdk_latest there.
     update_jre -a -t tzupdater /opt/java/
-            updates the tzupdater in /opt/java/ and it creates a symlink
+            updates the tzupdater in /opt/java/ and it updates a symlink
             called tzupdater.jar there.
-
 ```
 
 
