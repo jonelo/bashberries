@@ -57,7 +57,8 @@ TEMPDIR=/tmp/bash-dwarfs.$$
 curl -Lo $TEMPZIP https://github.com/jonelo/bash-dwarfs/archive/master.zip
 unzip -d $TEMPDIR $TEMPZIP
 mkdir -p "${TARGET}/includes"
-mv $TEMPDIR/bash-dwarfs-master/bin/* "$TARGET/"
 mv $TEMPDIR/bash-dwarfs-master/bin/includes/* "${TARGET}/includes/"
+rmdir $TEMPDIR/bash-dwarfs-master/bin/includes
+mv $TEMPDIR/bash-dwarfs-master/bin/* "$TARGET/"
 rm -R $TEMPDIR
 rm $TEMPZIP
