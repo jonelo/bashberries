@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# update_jre 1.0.0
+# update_jre 1.1.0
 #
 # This script downloads the latest tzupdater from oracle.com and
 # updates the tzupdater.jar in the directory where this script is stored.
@@ -29,19 +29,21 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 
 usage() {
 cat << END
-update_jre v1.0.0, Copyright 2018 Johann N. Loefflmann
+update_jre v1.1.0, Copyright 2018 Johann N. Loefflmann
 
-Downloads the latest JRE tarball from the web, extracts it and
-creates a symlink called jre_latest.
+Downloads the latest JRE or JDK tarball from the web, extracts it and
+creates a symlink called jre_latest resp. jdk_latest.
 
 Usage:
-    update_jre [ [-h] | -a [-f] [-k] ] [path]
+    update_jre [ [-h] | -a [-d] [-f] [-k] [-t type] [path] ]
 
 Options:
-    -a      accept license. That is a required option.
-            Please read the license at
+    -a      accept license. That is a required option if you want to
+            download the JRE or JDK from the site. Please read the license at
             www.oracle.com/technetwork/java/javase/terms/license/index.html
             and allow the script to download the JRE by specifying this option.
+
+    -d      dry run. Don't download the JRE or JDK, just inform me.
 
     -f      force. Even if we have the JRE already, update it again.
 
@@ -49,6 +51,7 @@ Options:
 
     -k      keep the downloaded .tar.gz, don't remove it at the end.
 
+    -t      type. Can be jre (the JRE), sjre (server JRE) or jdk (the JDK).
 
 Parameters:
     path    specifies the path where the JRE should be stored.
@@ -57,9 +60,11 @@ Parameters:
 
 Examples:
     update_jre -a
-            updates the JRE in ./jre/ and it creates a symlink there.
-    update_jre -a /opt/java/jre
-            updates the JRE in /opt/java/jre/ and it creates a symlink there.
+            updates the JRE in ./jre/ and it creates a symlink called
+            jre_latest there.
+    update_jre -a -t jdk /opt/java/jdk
+            updates the JDK in /opt/java/jdk/ and it creates a symlink
+            called jdk_latest there.
 END
 exit 0
 }
@@ -134,7 +139,7 @@ function parseFile() {
         FOUND_ADDRESS="${BASH_REMATCH[1]}"
         printf "INFO: Found %s in %s\n" "${FOUND_ADDRESS}" "${INFILE}"
     else
-        printf "FATAL: Actual download address was not found in content of %s\n" "${INFLIE}"
+        printf "FATAL: Actual download address was not found in content of %s\n" "${INFILE}"
         exit 1
     fi
 }
@@ -144,20 +149,38 @@ function main() {
 
     # options
     ACCEPT=0
-    KEEP=0
+    DRYRUN=0
     FORCE=0
-    while getopts ':afkh' OPTION
+    KEEP=0
+    TYPE="jre"
+    while getopts ':afkht:d' OPTION
     do
         case $OPTION in
             a) ACCEPT=1
+               ;;
+            d) DRYRUN=1
                ;;
             f) FORCE=1
                ;;
             k) KEEP=1
                ;;
+            t) TYPE="$OPTARG"
+	           if [ "$TYPE" != "jre" ] && [ "$TYPE" != "sjre" ] && [ "$TYPE" != "jdk" ]; then
+                   printf "ERROR: -t %s is not supported.\n" "$TYPE"
+                   exit 1
+               fi
+               if [ "$OS_TAG" = "osx" ] && [ "$TYPE" = "sjre" ]; then
+                   printf "ERROR: A Server JRE is not supported on macOS.\n" "$TYPE"
+                   exit 1
+               fi
+               if [ "$OS_TAG" = "osx" ] && [ "$TYPE" = "jdk" ]; then
+                   printf "ERROR: a JDK .tar.gz is not supported on macOS.\n" "$TYPE"
+                   exit 1
+               fi
+               ;;
             h) usage
                ;;
-            ?) printf "ERROR: Option -%s is not a supported option.\n" $OPTARG
+            ?) printf "ERROR: Option -%s is not a supported option.\n" "$OPTARG"
                exit 1
                ;;
         esac
@@ -167,7 +190,7 @@ function main() {
 
     # parameters
     case $# in
-        0) TARGET_DIR="${SCRIPT_DIR}/.jre"
+        0) TARGET_DIR="${SCRIPT_DIR}/.${TYPE}"
            ;;
         1) TARGET_DIR="$1"
            ;;
@@ -176,22 +199,25 @@ function main() {
            ;;
     esac
 
-    VERSION_FILE="${TARGET_DIR}/jre.version"
-    TEMP_FILE=/tmp/update_jre.$$
+
+    VERSION_FILE="${TARGET_DIR}/${TYPE}.version"
+    TEMP_FILE=/tmp/update_${TYPE}.$$
 
     # create the configuration directory
     if [ ! -d "${TARGET_DIR}" ]; then
-        printf "Making directory: %s\n" "${TARGET_DIR}"
+        printf "INFO: Making directory: %s\n" "${TARGET_DIR}"
         mkdir -p "${TARGET_DIR}"
     fi
 
-    printf "Checking for new JRE on the Java onestop page ...\n"
+    printf "INFO: Checking for new %s on the Java onestop page ...\n" $TYPE
 
     DOWNLOAD_ADDRESS="http://www.oracle.com/technetwork/java/javase/downloads/index.html"
     downloadWebsite "$DOWNLOAD_ADDRESS" "$TEMP_FILE"
-    # Find the actual JRE download page
+    # Find the actual JRE/JDK download page
     # e.g. <a href="/technetwork/java/javase/downloads/jre10-downloads-4417026.html" target=""><img alt="Download JRE"
-    REGEX='href=\"([^\"]+)\"([^>]+)>[[:space:]]*<img[[:space:]]+alt=\"Download[[:space:]]JRE\"'
+    #      <a align="center" target="" href="/technetwork/java/javase/downloads/sjre10-downloads-4417025.html"><img alt="Download JDK"
+    #      <a href="/technetwork/java/javase/downloads/jdk10-downloads-4416644.html" target=""><img alt="Download JDK"
+    REGEX='href=\"(/technetwork/java/javase/downloads/'${TYPE}'[^\"]+)\"([^>]*)>[[:space:]]*<img[[:space:]]+alt=\"Download[[:space:]]'
     parseFile "$TEMP_FILE" $REGEX
 
     DOWNLOAD_ADDRESS="http://www.oracle.com/${FOUND_ADDRESS}"
@@ -215,6 +241,10 @@ function main() {
     WEHAVE=$(<"${VERSION_FILE}")
 
     if [ "$DOWNLOAD_ADDRESS" != "$WEHAVE" ] || [ $FORCE -eq 1 ]; then
+       if [ $DRYRUN -eq 1 ]; then
+           printf "INFO: DRY RUN: Would download %s and would save it to %s.\n" "$DOWNLOAD_ADDRESS" "$THE_TAR_GZ"
+           exit 0
+       fi
        printf "Downloading %s ...\n" "$DOWNLOAD_ADDRESS"
        if [ -f "${THE_TAR_GZ}" ]; then
            rm "${THE_TAR_GZ}"
@@ -231,18 +261,18 @@ function main() {
            BACKUP=$(pwd)
            cd "${TARGET_DIR}"
 
-           # find the just created jre folder (faster than to search again in the .tar.gz)
-           # by finding java and extracting the folder from that line
+           # find the java binary in the just created folder (it is faster than to search again in the .tar.gz)
            unset -v LATEST
            for FILE in $(find . -name java); do
                [[ $FILE -nt $LATEST ]] && LATEST=$FILE
            done
+           # extract the path from the .../bin/java string
            LATEST=${LATEST%/*} # remove /java from the string
            LATEST=${LATEST%/*} # remove /bin from the string
 
            # update the symlink
-           rm jre_latest 2> /dev/null
-           ln -s $LATEST jre_latest
+           rm "${TYPE}_latest" 2> /dev/null
+           ln -s $LATEST "${TYPE}_latest"
 
            # restore the folder
            cd "${BACKUP}"
@@ -256,7 +286,7 @@ function main() {
            exit 1
        fi
     else
-       printf "Skipping download, because we have %s already.\n" $DOWNLOAD_ADDRESS
+       printf "Skipping download, because it seems that have downloaded %s already in the past. Use -f to force a download.\n" $DOWNLOAD_ADDRESS
     fi
 }
 

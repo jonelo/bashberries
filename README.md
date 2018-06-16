@@ -144,23 +144,29 @@ Examples:
 
 ### update_jre
 ```
-update_jre v1.0.0, Copyright 2018 Johann N. Loefflmann
+update_jre v1.1.0, Copyright 2018 Johann N. Loefflmann
 
-Downloads the latest JRE tarball from the web, extracts it and
-creates a symlink called jre_latest.
+Downloads the latest JRE or JDK tarball from the web, extracts it and
+creates a symlink called jre_latest resp. jdk_latest.
 
 Usage:
-    update_jre -a [path]
+    update_jre [ [-h] | -a [-d] [-f] [-k] [-t type] [path] ]
 
 Options:
-    -a      accept license. That is a required option.
-            Please read the license at
+    -a      accept license. That is a required option if you want to
+            download the JRE or JDK from the site. Please read the license at
             www.oracle.com/technetwork/java/javase/terms/license/index.html
             and allow the script to download the JRE by specifying this option.
 
-    -k      keep the downloaded .tar.gz, don't remove it at the end.
+    -d      dry run. Don't download the JRE or JDK, just inform me.
 
     -f      force. Even if we have the JRE already, update it again.
+
+    -h      prints this help.
+
+    -k      keep the downloaded .tar.gz, don't remove it at the end.
+
+    -t      type. Can be jre (the JRE), sjre (server JRE) or jdk (the JDK).
 
 Parameters:
     path    specifies the path where the JRE should be stored.
@@ -169,9 +175,11 @@ Parameters:
 
 Examples:
     update_jre -a
-            updates the JRE in ./jre/ and it creates a symlink there.
-    update_jre -a /opt/java/jre
-            updates the JRE in /opt/java/jre/ and it creates a symlink there.
+            updates the JRE in ./jre/ and it creates a symlink called
+            jre_latest there.
+    update_jre -a -t jdk /opt/java/jdk
+            updates the JDK in /opt/java/jdk/ and it creates a symlink
+            called jdk_latest there.
 
 ```
 
