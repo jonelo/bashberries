@@ -18,8 +18,8 @@
 # limitations under the License.
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-. "${SCRIPT_DIR}/version.include"
-. "${SCRIPT_DIR}/network.include"
+. "${SCRIPT_DIR}/includes/version.include"
+. "${SCRIPT_DIR}/includes/network.include"
 
 usage() {
 cat << END

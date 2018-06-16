@@ -21,8 +21,8 @@
 PATH=/bin:/usr/bin:/usr/sbin
 LANG=C
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-. "${SCRIPT_DIR}/interaction.include"
-. "${SCRIPT_DIR}/trim.include"
+. "${SCRIPT_DIR}/includes/interaction.include"
+. "${SCRIPT_DIR}/includes/trim.include"
 
 usage() {
 cat << END

@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
 #
-# update_this 1.0.0
+# update_this 1.1.0
 #
 # This script downloads the latest scripts from the bash-dwarfs project to
 # the directory where this script is stored.
 #
-# Copyright 2017 Johann N. Loefflmann
+# Copyright 2017-2018 Johann N. Loefflmann
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -23,7 +23,7 @@ PATH=/bin:/usr/bin:/usr/sbin
 
 usage() {
 cat << END
-update_this v1.0.0, Copyright 2017 Johann N. Loefflmann
+update_this v1.1.0, Copyright 2017-2018 Johann N. Loefflmann
 
 Downloads the latest bash scripts from the bash-dwarfs project on github
 and updates any existing scripts in the directory that has been specified.
@@ -56,6 +56,8 @@ TEMPDIR=/tmp/bash-dwarfs.$$
 
 curl -Lo $TEMPZIP https://github.com/jonelo/bash-dwarfs/archive/master.zip
 unzip -d $TEMPDIR $TEMPZIP
-mv $TEMPDIR/bash-dwarfs-master/bin/* "$TARGET"
+mkdir -p "${TARGET}/includes"
+mv $TEMPDIR/bash-dwarfs-master/bin/* "$TARGET/"
+mv $TEMPDIR/bash-dwarfs-master/bin/includes/* "${TARGET}/includes/"
 rm -R $TEMPDIR
 rm $TEMPZIP
