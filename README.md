@@ -144,19 +144,24 @@ Examples:
 
 ### update_jre
 ```
-update_jre v1.1.0, Copyright 2018 Johann N. Loefflmann
+update_jre v1.2.0, Copyright 2018 Johann N. Loefflmann
 
-Downloads the latest JRE or JDK tarball from the web, extracts it and
-creates a symlink called jre_latest resp. jdk_latest.
+Downloads the latest JRE, Server JRE, or JDK tarball resp. the latest
+tzupdater zip from the web, extracts it and creates a symlink called
+jre_latest, sjre_latest, jdk_latest or tzupdater.jar.
 
 Usage:
     update_jre [ [-h] | -a [-d] [-f] [-k] [-t type] [path] ]
 
 Options:
     -a      accept license. That is a required option if you want to
-            download the JRE or JDK from the site. Please read the license at
+            download the JRE, JDK or tzupdater from the Oracle site.
+            Please read the license at
             www.oracle.com/technetwork/java/javase/terms/license/index.html
-            and allow the script to download the JRE by specifying this option.
+            resp. at
+            http://www.oracle.com/technetwork/java/javasebusiness/downloads/
+            tzupdater-lic-354297.txt
+            and allow the script to download the package by specifying this option.
 
     -d      dry run. Don't download the JRE or JDK, just inform me.
 
@@ -164,22 +169,28 @@ Options:
 
     -h      prints this help.
 
-    -k      keep the downloaded .tar.gz, don't remove it at the end.
+    -k      keep the downloaded .tar.gz resp. .zip, don't remove it at the end.
 
-    -t      type. Can be jre (the JRE), sjre (server JRE) or jdk (the JDK).
+    -t      type. Can be jre (the JRE), sjre (server JRE), jdk (the JDK) or
+            tzupdater.
+
+    -v      version. Prints out the version of this script.
 
 Parameters:
-    path    specifies the path where the JRE should be stored.
+    path    specifies the path where the JRE, JDK or tzupdater should be stored.
             It will be created if it doesn't exist.
-            If omitted, .jre/ will be used.
+            If omitted, .jre/, .sjre/, .jdk/, or .tzupdater/ will be used.
 
 Examples:
     update_jre -a
             updates the JRE in ./jre/ and it creates a symlink called
             jre_latest there.
-    update_jre -a -t jdk /opt/java/jdk
-            updates the JDK in /opt/java/jdk/ and it creates a symlink
+    update_jre -a -t jdk /opt/java/
+            updates the JDK in /opt/java/ and it creates a symlink
             called jdk_latest there.
+    update_jre -a -t tzupdater /opt/java/
+            updates the tzupdater in /opt/java/ and it creates a symlink
+            called tzupdater.jar there.
 
 ```
 
