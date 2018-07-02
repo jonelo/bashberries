@@ -12,6 +12,7 @@ Script name         | Description                                               
 bigfiles            | Determines the biggest files in a directory and it's subdirectories            |
 latlng              | Determines both latitude and longitude of a location                           |
 lines               | Extracts a block of lines from a textfile                                      |
+pwned               | Has your password been pwned?                                                  |
 update_jre          | Downloads the latests JRE from the web, extracts it and creates a symlink      |
 update_property     | Updates the value of a key/value pair in a property file                       |
 update_this         | Downloads all bash scripts from the bash-dwarfs project on github              |

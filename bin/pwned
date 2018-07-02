@@ -1,0 +1,43 @@
+#!/usr/bin/env bash
+#
+# pwned 1.0.0
+#
+# This script asks for a password on the command line and it checks
+# whether it has been pwned. No worries, your password isn't being
+# transferred over the wire. Only the first 20 bits of the SHA-1
+# hashed password is being transferred to the pwnedpasswords.com API.
+# See also https://haveibeenpwned.com/Passwords
+#
+# Copyright 2018 Johann N. Loefflmann
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+OS=$(uname -s)
+if [ "$OS" = "Darwin" ]; then
+    SHASUM=shasum
+else
+    SHASUM=sha1sum
+fi
+SERVER=api.pwnedpasswords.com
+printf "Password to check: "
+read -s PASSWORD
+HASH=$(printf "%s" "$PASSWORD" | ${SHASUM} -)
+HASH=${HASH:0:40}
+printf "\rsha1(password): %s\n" $HASH
+curl -o ${SERVER}.$$ https://${SERVER}/range/${HASH:0:5}
+if [ ! -f ${SERVER}.$$ ]; then
+    printf "Error: there is a problem with the server%s\n" $SERVER
+else
+    grep -i ${HASH:5} ${SERVER}.$$
+    rm ${SERVER}.$$
+fi
