@@ -54,13 +54,15 @@ Options:
 
     -k      keep the downloaded .tar.gz resp. .zip, don't remove it at the end.
 
-    -s      source. Supported values are oracle.com (default) and
+    -s      source. Supported values are oracle.com (default), jdk.java.net and
             adoptopenjdk.net
 
     -t      type.
-            For oracle.com this can be
+            For oracle.com it can be
                 jre (default), sjre (server JRE), jdk (the JDK) or tzupdater.
-            For adoptopenjdk.net this can be
+            For jdk.java.net this can be
+                openjdk10 or openjdk11
+            For adoptopenjdk.net it can be
                 openjdk8 or openjdk8-openj9
 
     -v      version. Prints out the version of this script.
@@ -217,7 +219,7 @@ function main() {
         licenseAcceptedRequired $ACCEPT
     fi
     if [ "$SOURCE" = "oracle.com" ]; then
-	if [ "$TYPE" != "jre" ] && [ "$TYPE" != "sjre" ] && [ "$TYPE" != "jdk" ] && [ "$TYPE" != "tzupdater" ]; then
+	    if [ "$TYPE" != "jre" ] && [ "$TYPE" != "sjre" ] && [ "$TYPE" != "jdk" ] && [ "$TYPE" != "tzupdater" ]; then
             printf "ERROR: type %s is not supported by %s.\n" "$TYPE" "$SOURCE"
             exit 1
         fi
@@ -245,6 +247,13 @@ function main() {
         fi
         if [ "$OS_TAG" = "Mac" ] && [ "$TYPE" = "openjdk8-openj9" ]; then
             printf "ERROR: type %s (a JDK .tar.gz) is not supported on macOS by %s.\n" "$TYPE" "$SOURCE"
+            exit 1
+        fi
+    fi
+
+    if [ "$SOURCE" = "jdk.java.net" ]; then
+        if [ "$TYPE" != "openjdk10" ] && [ "$TYPE" != "openjdk11" ]; then
+            printf "ERROR: type %s is not supported by %s.\n" "$TYPE" "$SOURCE"
             exit 1
         fi
     fi
@@ -311,6 +320,14 @@ function main() {
             REGEX='href=\"(/AdoptOpenJDK/'${TYPE}'-releases/releases/download/'${FOUND_ADDRESS}'/[^_]+_x64_'${OS_TAG}'_'${FOUND_ADDRESS}'\.tar\.gz)\"'
             parseFile "$TEMP_FILE" $REGEX
             FOUND_ADDRESS="https://github.com${FOUND_ADDRESS}"
+    elif [ $SOURCE = "jdk.java.net" ]; then
+            JDKVERSION=${TYPE:7} # remove the openjdk string
+            DOWNLOAD_ADDRESS="http://jdk.java.net/${JDKVERSION}/"
+            downloadWebsite "$DOWNLOAD_ADDRESS" "$TEMP_FILE"
+            # e.g. <td><a href="https://download.java.net/java/GA/jdk10/10.0.1/fb4372174a714e6b8c52526dc134031e/10//openjdk-10.0.1_linux-x64_bin.tar.gz">
+            # e.g. <td><a href="https://download.java.net/java/early_access/jdk11/20/GPL/openjdk-11-ea+20_linux-x64_bin.tar.gz">
+            REGEX='href=\"([^k]+k[^_]+_'${OS_TAG}'-x64_bin\.tar\.gz)\">'
+            parseFile "$TEMP_FILE" $REGEX
     fi
 
     DOWNLOAD_ADDRESS="${FOUND_ADDRESS}"
