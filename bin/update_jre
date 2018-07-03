@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #
 # update_jre
-SCRIPT_VERSION=1.3.0
+SCRIPT_VERSION=1.4.0
 #
 # This script downloads the latest JRE, Server JRE, JDK or tzupdater
 # from oracle.com. Use option -a to accept Oracle's binary license.
@@ -24,6 +24,7 @@ SCRIPT_VERSION=1.3.0
 # Explicitly set the PATH
 PATH="/sbin:/usr/sbin:/bin:/usr/bin"
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+SCRIPT_NAME="${0##*/}"
 
 usage() {
 cat << END
@@ -34,11 +35,11 @@ tzupdater zip from the web, extracts it and creates a symlink called
 jre_latest, sjre_latest, jdk_latest or tzupdater.jar.
 
 Usage:
-    update_jre [ [-h] | -a [-d] [-f] [-k] [-t type] [path] ]
+    update_jre [ [-h] | -a [-d] [-f] [-k] [-s source] [-t type] [path] ]
 
 Options:
     -a      accept license. That is a required option if you want to
-            download the JRE, JDK or tzupdater from the Oracle site.
+            download the JRE, JDK or tzupdater from the Oracle site (-t oracle.com).
             Please read the license at
             www.oracle.com/technetwork/java/javase/terms/license/index.html
             resp. at
@@ -53,8 +54,14 @@ Options:
 
     -k      keep the downloaded .tar.gz resp. .zip, don't remove it at the end.
 
-    -t      type. Can be jre (the JRE), sjre (server JRE), jdk (the JDK) or
-            tzupdater.
+    -s      source. Supported values are oracle.com (default) and
+            adoptopenjdk.net
+
+    -t      type.
+            For oracle.com this can be
+                jre (default), sjre (server JRE), jdk (the JDK) or tzupdater.
+            For adoptopenjdk.net this can be
+                openjdk8 or openjdk8-openj9
 
     -v      version. Prints out the version of this script.
 
@@ -67,20 +74,23 @@ Parameters:
             If omitted, .jre/, .sjre/, .jdk/, or .tzupdater/ will be used.
 
 Examples:
-    update_jre -a
+    ./update_jre -a
             updates the JRE in ./jre/ and it creates a symlink called
             jre_latest there.
-    update_jre -az myjres
+    ./update_jre -az myjres
             updates the JRE in myjres and it updates the symlink called
             jre_latest there. Additionally the latest timezone updater
             is being downloaded and called so that the JRE's timezone database
             also gets updated.
-    update_jre -a -t jdk /opt/java/
+    ./update_jre -a -t jdk /opt/java/
             updates the JDK in /opt/java/ and it updates a symlink
             called jdk_latest there.
-    update_jre -a -t tzupdater /opt/java/
+    ./update_jre -a -t tzupdater /opt/java/
             updates the tzupdater in /opt/java/ and it updates a symlink
             called tzupdater.jar there.
+    ./update_jre -azfs adoptopenjdk.net -t openjdk8
+            download the OpenJDK8 from adoptopenjdk.net (even if downloaded already)
+            and apply the latest timezone database from oracle.com.
 END
 exit 0
 }
@@ -109,12 +119,12 @@ function licenseAcceptedRequired() {
     if [ $1 -eq 0 ]; then
 cat << EOM
 
-ERROR: In order to allow this script to download the latest JRE, Server JRE or JDK,
-       please read and accept the license at
+ERROR: In order to allow this script to download the latest JRE, Server JRE or JDK
+       from oracle.com, please read and accept the license at
        http://www.oracle.com/technetwork/java/javase/terms/license/index.html
        by specifying the -a option to this script.
 
-       In order to allow this script to download the latest tzupdater,
+       In order to allow this script to download the latest tzupdater from oracle.com,
        please read and accept the license at
        http://www.oracle.com/technetwork/java/javasebusiness/downloads/tzupdater-lic-354297.txt
        by specifying the -a option to this script.
@@ -137,7 +147,7 @@ function downloadWebsite() {
     if [ -f "$OUTFILE" ]; then
         rm "$OUTFILE"
     fi
-    curl -o "$OUTFILE" "$WEBSITE"
+    curl -Lo "$OUTFILE" "$WEBSITE"
     if [ ! -f "$OUTFILE" ]; then
         printf "FATAL: Download of webpage %s failed. Please check your internet connection.\n" "${WEBSITE}"
         exit 1
@@ -172,7 +182,8 @@ function main() {
     KEEP=0
     ZOPTION=0
     TYPE="jre"
-    while getopts ':afkht:dvz' OPTION
+    SOURCE="oracle.com"
+    while getopts ':afkht:dvzs:' OPTION
     do
         case $OPTION in
             a) ACCEPT=1
@@ -183,19 +194,9 @@ function main() {
                ;;
             k) KEEP=1
                ;;
+            s) SOURCE="$OPTARG"
+               ;;
             t) TYPE="$OPTARG"
-	           if [ "$TYPE" != "jre" ] && [ "$TYPE" != "sjre" ] && [ "$TYPE" != "jdk" ] && [ "$TYPE" != "tzupdater" ]; then
-                   printf "ERROR: -t %s is not supported.\n" "$TYPE"
-                   exit 1
-               fi
-               if [ "$OS_TAG" = "osx" ] && [ "$TYPE" = "sjre" ]; then
-                   printf "ERROR: A Server JRE is not supported on macOS.\n" "$TYPE"
-                   exit 1
-               fi
-               if [ "$OS_TAG" = "osx" ] && [ "$TYPE" = "jdk" ]; then
-                   printf "ERROR: a JDK .tar.gz is not supported on macOS.\n" "$TYPE"
-                   exit 1
-               fi
                ;;
             v) printf "%s\n" "$SCRIPT_VERSION"
                exit 0
@@ -210,7 +211,43 @@ function main() {
         esac
     done
     shift $(($OPTIND -1))
-    licenseAcceptedRequired $ACCEPT
+
+    # option combination check
+    if [ "$SOURCE" = "oracle.com" ] || [ $ZOPTION -eq 1 ]; then
+        licenseAcceptedRequired $ACCEPT
+    fi
+    if [ "$SOURCE" = "oracle.com" ]; then
+	if [ "$TYPE" != "jre" ] && [ "$TYPE" != "sjre" ] && [ "$TYPE" != "jdk" ] && [ "$TYPE" != "tzupdater" ]; then
+            printf "ERROR: type %s is not supported by %s.\n" "$TYPE" "$SOURCE"
+            exit 1
+        fi
+        if [ "$OS_TAG" = "osx" ] && [ "$TYPE" = "sjre" ]; then
+            printf "ERROR: type %s (server JRE) is not supported on macOS by %s.\n" "$TYPE" "$SOURCE"
+            exit 1
+        fi
+        if [ "$OS_TAG" = "osx" ] && [ "$TYPE" = "jdk" ]; then
+            printf "ERROR: type %s (a JDK .tar.gz) is not supported on macOS by %s.\n" "$TYPE" "$SOURCE"
+            exit 1
+        fi
+    fi
+
+    if [ "$SOURCE" = "adoptopenjdk.net" ]; then
+        # OS identifiers for the files are different on adoptopenjdk.net
+        if [ "$OS_TAG" = "osx" ]; then
+            OS_TAG="Mac"
+        fi
+        if [ "$OS_TAG" = "linux" ]; then
+            OS_TAG="Linux"
+        fi
+	    if [ "$TYPE" != "openjdk8" ] && [ "$TYPE" != "openjdk8-openj9" ]; then
+            printf "ERROR: type %s is not supported by %s.\n" "$TYPE" "$SOURCE"
+            exit 1
+        fi
+        if [ "$OS_TAG" = "Mac" ] && [ "$TYPE" = "openjdk8-openj9" ]; then
+            printf "ERROR: type %s (a JDK .tar.gz) is not supported on macOS by %s.\n" "$TYPE" "$SOURCE"
+            exit 1
+        fi
+    fi
 
     # parameters
     case $# in
@@ -223,10 +260,10 @@ function main() {
            ;;
     esac
 
-    # jre, sjre or jdk with -z option is wanted
+    # any jre, sjre, jdk, etc. with -z option is wanted
     if [ "$TYPE" != "tzupdater" ] && [ $ZOPTION -eq 1 ]; then
         # get the tzupdater
-        "${SCRIPT_DIR}/update_jre" -a -t tzupdater "$TARGET_DIR"
+        "${SCRIPT_DIR}/${SCRIPT_NAME}" -a -t tzupdater "$TARGET_DIR"
     fi
 
     VERSION_FILE="${TARGET_DIR}/${TYPE}.version"
@@ -238,31 +275,42 @@ function main() {
         mkdir -p "${TARGET_DIR}"
     fi
 
-    printf "INFO: Checking for new %s on the Java onestop page ...\n" $TYPE
+    printf "INFO: Checking for %s on %s ...\n" $TYPE $SOURCE
 
-    if [ $TYPE = "tzupdater" ]; then
-        DOWNLOAD_ADDRESS="http://www.oracle.com/technetwork/java/javase/downloads/tzupdater-download-513681.html"
-        downloadWebsite "$DOWNLOAD_ADDRESS" "$TEMP_FILE"
-        # Find the address to the tzupdater .zip file
-        # e.g. http://download.oracle.com/otn-pub/java/tzupdater/2.1.0/tzupdater-2_1_0.zip
-        REGEX='(http://download.oracle.com/otn-pub/java/tzupdater/[^\"]+)\"'
-        parseFile "$TEMP_FILE" $REGEX
-    else # jre, sjre or jdk
-        DOWNLOAD_ADDRESS="http://www.oracle.com/technetwork/java/javase/downloads/index.html"
-        downloadWebsite "$DOWNLOAD_ADDRESS" "$TEMP_FILE"
-        # Find the actual JRE/JDK download page
-        # e.g. <a href="/technetwork/java/javase/downloads/jre10-downloads-4417026.html" target=""><img alt="Download JRE"
-        #      <a align="center" target="" href="/technetwork/java/javase/downloads/sjre10-downloads-4417025.html"><img alt="Download JDK"
-        #      <a href="/technetwork/java/javase/downloads/jdk10-downloads-4416644.html" target=""><img alt="Download JDK"
-        REGEX='href=\"(/technetwork/java/javase/downloads/'${TYPE}'[^\"]+)\"([^>]*)>[[:space:]]*<img[[:space:]]+alt=\"Download[[:space:]]'
-        parseFile "$TEMP_FILE" $REGEX
+    if [ $SOURCE = "oracle.com" ]; then
+        if [ $TYPE = "tzupdater" ]; then
+            DOWNLOAD_ADDRESS="http://www.oracle.com/technetwork/java/javase/downloads/tzupdater-download-513681.html"
+            downloadWebsite "$DOWNLOAD_ADDRESS" "$TEMP_FILE"
+            # Find the address to the tzupdater .zip file
+            # e.g. http://download.oracle.com/otn-pub/java/tzupdater/2.1.0/tzupdater-2_1_0.zip
+            REGEX='(http://download.oracle.com/otn-pub/java/tzupdater/[^\"]+)\"'
+            parseFile "$TEMP_FILE" $REGEX
+        else # jre, sjre or jdk
+            DOWNLOAD_ADDRESS="http://www.oracle.com/technetwork/java/javase/downloads/index.html"
+            downloadWebsite "$DOWNLOAD_ADDRESS" "$TEMP_FILE"
+            # Find the actual JRE/JDK download page
+            # e.g. <a href="/technetwork/java/javase/downloads/jre10-downloads-4417026.html" target=""><img alt="Download JRE"
+            #      <a align="center" target="" href="/technetwork/java/javase/downloads/sjre10-downloads-4417025.html"><img alt="Download JDK"
+            #      <a href="/technetwork/java/javase/downloads/jdk10-downloads-4416644.html" target=""><img alt="Download JDK"
+            REGEX='href=\"(/technetwork/java/javase/downloads/'${TYPE}'[^\"]+)\"([^>]*)>[[:space:]]*<img[[:space:]]+alt=\"Download[[:space:]]'
+            parseFile "$TEMP_FILE" $REGEX
 
-        DOWNLOAD_ADDRESS="http://www.oracle.com/${FOUND_ADDRESS}"
-        downloadWebsite "$DOWNLOAD_ADDRESS" "$TEMP_FILE"
-        #  Parse for the .tar.gz file
-        # e.g. http://download.oracle.com/otn-pub/java/jdk/10.0.1+10/fb4372174a714e6b8c52526dc134031e/jre-10.0.1_linux-x64_bin.tar.gz
-        REGEX='(http://download.oracle.com/otn-pub/java/[^_]+_'${OS_TAG}'[^\.]+\.tar.\gz)\"'
-        parseFile "$TEMP_FILE" $REGEX
+            DOWNLOAD_ADDRESS="http://www.oracle.com/${FOUND_ADDRESS}"
+            downloadWebsite "$DOWNLOAD_ADDRESS" "$TEMP_FILE"
+            #  Parse for the .tar.gz file
+            # e.g. http://download.oracle.com/otn-pub/java/jdk/10.0.1+10/fb4372174a714e6b8c52526dc134031e/jre-10.0.1_linux-x64_bin.tar.gz
+            REGEX='(http://download.oracle.com/otn-pub/java/[^_]+_'${OS_TAG}'[^\.]+\.tar\.gz)\"'
+            parseFile "$TEMP_FILE" $REGEX
+        fi
+    elif [ $SOURCE = "adoptopenjdk.net" ]; then
+            DOWNLOAD_ADDRESS="https://github.com/AdoptOpenJDK/${TYPE}-releases/releases/latest"
+            downloadWebsite "$DOWNLOAD_ADDRESS" "$TEMP_FILE"
+            REGEX='tag/([^"]+)'
+            parseFile "$TEMP_FILE" $REGEX
+            # e.g. <a href="/AdoptOpenJDK/openjdk8-openj9-releases/releases/download/jdk8u162-b12_openj9-0.8.0/OpenJDK8-OPENJ9_x64_Linux_jdk8u162-b12_openj9-0.8.0.tar.gz" rel="nofollow">
+            REGEX='href=\"(/AdoptOpenJDK/'${TYPE}'-releases/releases/download/'${FOUND_ADDRESS}'/[^_]+_x64_'${OS_TAG}'_'${FOUND_ADDRESS}'\.tar\.gz)\"'
+            parseFile "$TEMP_FILE" $REGEX
+            FOUND_ADDRESS="https://github.com${FOUND_ADDRESS}"
     fi
 
     DOWNLOAD_ADDRESS="${FOUND_ADDRESS}"
@@ -287,7 +335,11 @@ function main() {
        if [ -f "${ARCHIVE_FILE}" ]; then
            rm "${ARCHIVE_FILE}"
        fi
-       curl -o "${ARCHIVE_FILE}" -j -k -L -H "Cookie: oraclelicense=accept-securebackup-cookie" "$DOWNLOAD_ADDRESS"
+       if [ "$SOURCE" = "oracle.com" ]; then
+           curl -Lo "${ARCHIVE_FILE}" -j -k -L -H "Cookie: oraclelicense=accept-securebackup-cookie" "$DOWNLOAD_ADDRESS"
+       else
+           curl -Lo "${ARCHIVE_FILE}" "$DOWNLOAD_ADDRESS"
+       fi
        if [ -f "${ARCHIVE_FILE}" ]; then
 
            printf "%s\n" "${DOWNLOAD_ADDRESS}" > "${VERSION_FILE}"
@@ -333,7 +385,7 @@ function main() {
                rm "${ARCHIVE_FILE}"
            fi
 
-           # jre, sjre or jdk with -z option is wanted
+           # any jre, sjre or jdk, etc. with -z option is wanted
            if [ "$TYPE" != "tzupdater" ] && [ $ZOPTION -eq 1 ]; then
                # call the tzupdater by using the java binary from the JRE/JDK that we have just downloaded
                "${TARGET_DIR}/${TYPE}_latest/bin/java" -jar "${TARGET_DIR}/tzupdater.jar" -v -l
