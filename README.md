@@ -145,34 +145,58 @@ Examples:
 
 ### update_jre
 ```
-update_jre v1.3.0, Copyright 2018 Johann N. Loefflmann
+update_jre v1.4.0, Copyright 2018 Johann N. Loefflmann
 
-Downloads the latest JRE, Server JRE, or JDK tarball resp. the latest
-tzupdater zip from the web, extracts it and creates a symlink called
-jre_latest, sjre_latest, jdk_latest or tzupdater.jar.
+Downloads the latest x64 JRE/JDK tarball resp. the latest tzupdater zip
+from the web, extracts it and creates/updates a symlink called <type>_latest
+or tzupdater.jar. Supports multiple sources, such as oracle.com, java.com,
+jdk.java.net, and adoptopenjdk.net. The OS flavor of the JRE/JDK is determined
+by the OS that you are running. Linux and macOS are supported.
 
 Usage:
-    update_jre [ [-h] | -a [-d] [-f] [-k] [-t type] [path] ]
+    update_jre [ [-h] | [-a] [-d] [-f] [-k] [-s source] [-t type] [path] ]
 
 Options:
     -a      accept license. That is a required option if you want to
-            download the JRE, JDK or tzupdater from the Oracle site.
+            download the JRE, JDK or tzupdater from the Oracle site (-t oracle.com).
             Please read the license at
             www.oracle.com/technetwork/java/javase/terms/license/index.html
             resp. at
             http://www.oracle.com/technetwork/java/javasebusiness/downloads/tzupdater-lic-354297.txt
             and allow the script to download the package by specifying this option.
 
-    -d      dry run. Don't download the JRE or JDK or tzupdater, just inform me.
+    -d      dry run. Don't download the JRE, JDK or tzupdater, just inform the user.
 
-    -f      force. Even if we have the JRE already, update it again.
+    -f      force. Even if we have the JRE, JDK or tzupdater already, update it again.
 
     -h      prints this help.
 
     -k      keep the downloaded .tar.gz resp. .zip, don't remove it at the end.
 
-    -t      type. Can be jre (the JRE), sjre (server JRE), jdk (the JDK) or
-            tzupdater.
+    -s      source. Supported values are
+                oracle.com        (Oracle binaries, default)
+                java.com          (Oracle binaries)
+                jdk.java.net      (OpenJDK binaries)
+                adoptopenjdk.net  (OpenJDK binaries)
+
+    -t      type. Valid value depends on the source.
+
+            For -s oracle.com it can be
+                jre               (latest JRE)
+                sjre              (latest Server JRE)
+                jdk               (latest JDK)
+                tzupdater         (latest tzupdater)
+
+            For -s java.com it can be
+                 jre              (latest JRE)
+
+            For -s jdk.java.net this can be
+                openjdk10         (OpenJDK 10)
+                openjdk11         (OpenJDK 11)
+
+            For -s adoptopenjdk.net it can be
+                openjdk8          (OpenJDK 8 with Hotspot)
+                openjdk8-openj9   (OpenJDK 8 with OpenJ9)
 
     -v      version. Prints out the version of this script.
 
@@ -185,20 +209,23 @@ Parameters:
             If omitted, .jre/, .sjre/, .jdk/, or .tzupdater/ will be used.
 
 Examples:
-    update_jre -a
+    ./update_jre -a
             updates the JRE in ./jre/ and it creates a symlink called
             jre_latest there.
-    update_jre -az myjres
+    ./update_jre -az myjres
             updates the JRE in myjres and it updates the symlink called
             jre_latest there. Additionally the latest timezone updater
             is being downloaded and called so that the JRE's timezone database
             also gets updated.
-    update_jre -a -t jdk /opt/java/
+    ./update_jre -a -t jdk /opt/java/
             updates the JDK in /opt/java/ and it updates a symlink
             called jdk_latest there.
-    update_jre -a -t tzupdater /opt/java/
+    ./update_jre -a -t tzupdater /opt/java/
             updates the tzupdater in /opt/java/ and it updates a symlink
             called tzupdater.jar there.
+    ./update_jre -azfs adoptopenjdk.net -t openjdk8
+            download the OpenJDK8 from adoptopenjdk.net (even if downloaded
+            already) and apply the latest timezone database from oracle.com.
 ```
 
 
