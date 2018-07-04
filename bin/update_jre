@@ -30,12 +30,14 @@ usage() {
 cat << END
 update_jre v${SCRIPT_VERSION}, Copyright 2018 Johann N. Loefflmann
 
-Downloads the latest JRE, Server JRE, or JDK tarball resp. the latest
-tzupdater zip from the web, extracts it and creates a symlink called
-jre_latest, sjre_latest, jdk_latest or tzupdater.jar.
+Downloads the latest x64 JRE/JDK tarball resp. the latest tzupdater zip
+from the web, extracts it and creates/updates a symlink called <type>_latest
+or tzupdater.jar. Supports multiple sources, such as oracle.com, java.com,
+jdk.java.net, and adoptopenjdk.net. The OS flavor of the JRE/JDK is determined
+by the OS that you are running. Linux and macOS are supported.
 
 Usage:
-    update_jre [ [-h] | -a [-d] [-f] [-k] [-s source] [-t type] [path] ]
+    update_jre [ [-h] | [-a] [-d] [-f] [-k] [-s source] [-t type] [path] ]
 
 Options:
     -a      accept license. That is a required option if you want to
@@ -46,24 +48,38 @@ Options:
             http://www.oracle.com/technetwork/java/javasebusiness/downloads/tzupdater-lic-354297.txt
             and allow the script to download the package by specifying this option.
 
-    -d      dry run. Don't download the JRE or JDK or tzupdater, just inform me.
+    -d      dry run. Don't download the JRE, JDK or tzupdater, just inform the user.
 
-    -f      force. Even if we have the JRE already, update it again.
+    -f      force. Even if we have the JRE, JDK or tzupdater already, update it again.
 
     -h      prints this help.
 
     -k      keep the downloaded .tar.gz resp. .zip, don't remove it at the end.
 
-    -s      source. Supported values are oracle.com (default), jdk.java.net and
-            adoptopenjdk.net
+    -s      source. Supported values are
+                oracle.com        (Oracle binaries, default)
+                java.com          (Oracle binaries)
+                jdk.java.net      (OpenJDK binaries)
+                adoptopenjdk.net  (OpenJDK binaries)
 
-    -t      type.
-            For oracle.com it can be
-                jre (default), sjre (server JRE), jdk (the JDK) or tzupdater.
-            For jdk.java.net this can be
-                openjdk10 or openjdk11
-            For adoptopenjdk.net it can be
-                openjdk8 or openjdk8-openj9
+    -t      type. Valid value depends on the source.
+
+            For -s oracle.com it can be
+                jre               (latest JRE)
+                sjre              (latest Server JRE)
+                jdk               (latest JDK)
+                tzupdater         (latest tzupdater)
+
+            For -s java.com it can be
+                 jre              (latest JRE)
+
+            For -s jdk.java.net this can be
+                openjdk10         (OpenJDK 10)
+                openjdk11         (OpenJDK 11)
+
+            For -s adoptopenjdk.net it can be
+                openjdk8          (OpenJDK 8 with Hotspot)
+                openjdk8-openj9   (OpenJDK 8 with OpenJ9)
 
     -v      version. Prints out the version of this script.
 
@@ -91,8 +107,8 @@ Examples:
             updates the tzupdater in /opt/java/ and it updates a symlink
             called tzupdater.jar there.
     ./update_jre -azfs adoptopenjdk.net -t openjdk8
-            download the OpenJDK8 from adoptopenjdk.net (even if downloaded already)
-            and apply the latest timezone database from oracle.com.
+            download the OpenJDK8 from adoptopenjdk.net (even if downloaded
+            already) and apply the latest timezone database from oracle.com.
 END
 exit 0
 }
@@ -121,13 +137,13 @@ function licenseAcceptedRequired() {
     if [ $1 -eq 0 ]; then
 cat << EOM
 
-ERROR: In order to allow this script to download the latest JRE, Server JRE or JDK
-       from oracle.com, please read and accept the license at
+ERROR: In order to allow this script to download the latest JRE, Server JRE
+       or JDK from oracle.com, please read and accept the license at
        http://www.oracle.com/technetwork/java/javase/terms/license/index.html
        by specifying the -a option to this script.
 
-       In order to allow this script to download the latest tzupdater from oracle.com,
-       please read and accept the license at
+       In order to allow this script to download the latest tzupdater from
+       oracle.com, please read and accept the license at
        http://www.oracle.com/technetwork/java/javasebusiness/downloads/tzupdater-lic-354297.txt
        by specifying the -a option to this script.
 
@@ -192,6 +208,8 @@ function main() {
                ;;
             d) DRYRUN=1
                ;;
+            h) usage
+               ;;
             f) FORCE=1
                ;;
             k) KEEP=1
@@ -205,8 +223,6 @@ function main() {
                ;;
             z) ZOPTION=1
                ;;
-            h) usage
-               ;;
             ?) printf "ERROR: Option -%s is not a supported option.\n" "$OPTARG"
                exit 1
                ;;
@@ -218,6 +234,7 @@ function main() {
     if [ "$SOURCE" = "oracle.com" ] || [ $ZOPTION -eq 1 ]; then
         licenseAcceptedRequired $ACCEPT
     fi
+
     if [ "$SOURCE" = "oracle.com" ]; then
 	    if [ "$TYPE" != "jre" ] && [ "$TYPE" != "sjre" ] && [ "$TYPE" != "jdk" ] && [ "$TYPE" != "tzupdater" ]; then
             printf "ERROR: type %s is not supported by %s.\n" "$TYPE" "$SOURCE"
@@ -255,6 +272,17 @@ function main() {
         if [ "$TYPE" != "openjdk10" ] && [ "$TYPE" != "openjdk11" ]; then
             printf "ERROR: type %s is not supported by %s.\n" "$TYPE" "$SOURCE"
             exit 1
+        fi
+    fi
+
+    if [ "$SOURCE" = "java.com" ]; then
+        if [ "$TYPE" != "jre" ]; then
+            printf "ERROR: type %s is not supported by %s.\n" "$TYPE" "$SOURCE"
+            exit 1
+        fi
+        if [ "$OS_TAG" = "osx" ]; then
+            printf "ERROR: type %s (a JRE .tar.gz) is not supported on macOS by %s.\n" "$TYPE" "$SOURCE"
+           # exit 1
         fi
     fi
 
@@ -327,6 +355,14 @@ function main() {
             # e.g. <td><a href="https://download.java.net/java/GA/jdk10/10.0.1/fb4372174a714e6b8c52526dc134031e/10//openjdk-10.0.1_linux-x64_bin.tar.gz">
             # e.g. <td><a href="https://download.java.net/java/early_access/jdk11/20/GPL/openjdk-11-ea+20_linux-x64_bin.tar.gz">
             REGEX='href=\"([^k]+k[^_]+_'${OS_TAG}'-x64_bin\.tar\.gz)\">'
+            parseFile "$TEMP_FILE" $REGEX
+    elif [ $SOURCE = "java.com" ]; then
+            DOWNLOAD_ADDRESS="https://www.java.com/en/download/manual.jsp"
+            # e.g. <a title="Download Java software for Linux x64" href="http://javadl.oracle.com/webapps/download/AutoDL?BundleId=233162_512cd62ec5174c3487ac17c61aaa89e8" ...>
+            # Linux x64</a>
+            downloadWebsite "$DOWNLOAD_ADDRESS" "$TEMP_FILE"
+            IDENTIFIER='Linux[[:space:]]x64</a>'
+            REGEX='(http[s]?://javadl.oracle.com/webapps/download/AutoDL\?BundleId=[^"]+)"[^>]*>[[:space:]]*'${IDENTIFIER}
             parseFile "$TEMP_FILE" $REGEX
     fi
 
