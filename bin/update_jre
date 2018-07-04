@@ -3,9 +3,11 @@
 # update_jre
 SCRIPT_VERSION=1.4.0
 #
-# This script downloads the latest JRE, Server JRE, JDK or tzupdater
-# from oracle.com. Use option -a to accept Oracle's binary license.
-# Without that option, this script won't do the job.
+# Downloads the latest x64 JRE/JDK tarball resp. the latest tzupdater zip
+# from the web, extracts it and creates/updates a symlink called <type>_latest
+# or tzupdater.jar. Supports multiple sources, such as oracle.com, java.com,
+# jdk.java.net, and adoptopenjdk.net. The OS flavor of the JRE/JDK is determined
+# by the OS that you are running. Linux and macOS are supported.
 #
 # Copyright 2018 Johann N. Loefflmann
 #
