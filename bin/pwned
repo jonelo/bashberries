@@ -1,11 +1,11 @@
-#!/usr/bin/env bash
+#!/bin/bash -
 #
-# pwned 1.0.0
+# pwned 1.1.0
 #
 # This script asks for a password on the command line and it checks
 # whether it has been pwned. No worries, your password isn't being
 # transferred over the wire. Only the first 20 bits of the SHA-1
-# hashed password is being transferred to the pwnedpasswords.com API.
+# hashed password is being transferred to the pwnedpasswords.com server.
 # See also https://haveibeenpwned.com/Passwords
 #
 # Copyright 2018 Johann N. Loefflmann
@@ -22,8 +22,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-OS=$(uname -s)
-if [ "$OS" = "Darwin" ]; then
+if [ "$(uname -s)" = "Darwin" ]; then
     SHASUM=shasum
 else
     SHASUM=sha1sum
@@ -34,10 +33,16 @@ read -s PASSWORD
 HASH=$(printf "%s" "$PASSWORD" | ${SHASUM} -)
 HASH=${HASH:0:40}
 printf "\rsha1(password): %s\n" $HASH
-curl -o ${SERVER}.$$ https://${SERVER}/range/${HASH:0:5}
-if [ ! -f ${SERVER}.$$ ]; then
-    printf "Error: there is a problem with the server%s\n" $SERVER
+curl -so /tmp/${SERVER}.$$ https://${SERVER}/range/${HASH:0:5}
+if [ ! -f /tmp/${SERVER}.$$ ]; then
+    printf "There seems to be a problem with the connection to %s.\n" $SERVER
 else
-    grep -i ${HASH:5} ${SERVER}.$$
-    rm ${SERVER}.$$
+    LINE=$(grep -i ${HASH:5} /tmp/${SERVER}.$$)
+    rm /tmp/${SERVER}.$$
+    if [ -n "$LINE" ]; then
+       LINE=${LINE//[$'\r\n']}
+       printf "The password has been pwned %s times.\n" "${LINE##*:}"
+    else
+       printf "The password has not been pwned.\n"
+    fi
 fi
