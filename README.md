@@ -145,29 +145,37 @@ Examples:
 
 ### update_jre
 ```
-update_jre v1.4.0, Copyright 2018 Johann N. Loefflmann
+update_jre v1.6.0, Copyright 2018 Johann N. Loefflmann
 
-Downloads the latest x64 JRE/JDK tarball resp. the latest tzupdater zip
-from the web, extracts it and creates/updates a symlink called <type>_latest
-or tzupdater.jar. Supports multiple sources, such as oracle.com, java.com,
-jdk.java.net, and adoptopenjdk.net. The OS flavor of the JRE/JDK is determined
-by the OS that you are running. Linux and macOS are supported.
+Downloads the latest x64 JRE/JDK tarball resp. the latest tzupdater zip from
+the web, extracts it and creates/updates a symlink called <type>_latest
+resp. tzupdater.jar. Supports multiple sources, such as oracle.com, java.com,
+jdk.java.net, and adoptopenjdk.net. The latest timezone database can be applied
+to the requested JRE/JDK as well so that you have the most possible up to date
+JRE/JDK within a Java family from your preferred source. And since the symlink
+always points to the latest JRE/JDK you can update the JRE/JDK both fast and
+comfortable. The OS flavor of the JRE/JDK is determined by the OS that you are
+running. Linux and macOS are supported.
 
 Usage:
     update_jre [ [-h] | [-a] [-d] [-f] [-k] [-s source] [-t type] [path] ]
 
 Options:
     -a      accept license. That is a required option if you want to
-            download the JRE, JDK or tzupdater from the Oracle site (-t oracle.com).
-            Please read the license at
+            download the JRE, JDK or tzupdater from the Oracle site
+            (-t oracle.com). Please read the license at
             www.oracle.com/technetwork/java/javase/terms/license/index.html
             resp. at
-            http://www.oracle.com/technetwork/java/javasebusiness/downloads/tzupdater-lic-354297.txt
-            and allow the script to download the package by specifying this option.
+            http://www.oracle.com/technetwork/java/javasebusiness/downloads/
+            L-> tzupdater-lic-354297.txt
+            and allow the script to download the package by specifying this
+            option.
 
-    -d      dry run. Don't download the JRE, JDK or tzupdater, just inform the user.
+    -d      dry run. Don't download the JRE, JDK or tzupdater, just inform the
+            user.
 
-    -f      force. Even if we have the JRE, JDK or tzupdater already, update it again.
+    -f      force. Even if we have the JRE, JDK or tzupdater already, update it
+            again.
 
     -h      prints this help.
 
@@ -197,16 +205,19 @@ Options:
             For -s adoptopenjdk.net it can be
                 openjdk8          (OpenJDK 8 with Hotspot)
                 openjdk8-openj9   (OpenJDK 8 with OpenJ9)
+                openjdk10         (OpenJDK 10 with Hotspot)
+                openjdk10-openj9  (OpenJDK 10 with OpenJ9)
 
     -v      version. Prints out the version of this script.
 
     -z      after the JRE or JDK has been downloaded and extracted, the
             latest tzupdater will be downloaded and applied to the JRE or JDK.
+            Requires -a to work.
 
 Parameters:
     path    specifies the path where the JRE, JDK or tzupdater should be stored.
             It will be created if it doesn't exist.
-            If omitted, .jre/, .sjre/, .jdk/, or .tzupdater/ will be used.
+            If omitted, .<type>/ will be used.
 
 Examples:
     ./update_jre -a
@@ -223,9 +234,12 @@ Examples:
     ./update_jre -a -t tzupdater /opt/java/
             updates the tzupdater in /opt/java/ and it updates a symlink
             called tzupdater.jar there.
-    ./update_jre -azfs adoptopenjdk.net -t openjdk8
-            download the OpenJDK8 from adoptopenjdk.net (even if downloaded
-            already) and apply the latest timezone database from oracle.com.
+    ./update_jre -az -s adoptopenjdk.net -t openjdk10
+            download both the latest tzupdater from oracle.com and
+            the latest OpenJDK10 build from adoptopenjdk.net, apply the
+            latest timezone database from IANA to the OpenJDK by calling
+            the tzupdater tool. Symlink called .opendk10/openjdk10_latest
+            will point to the latest and updated OpenJDK10 build.
 ```
 
 
