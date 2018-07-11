@@ -429,24 +429,21 @@ function main() {
                gunzip < "${ARCHIVE_FILE}" | tar xfv - -C "${TARGET_DIR}"
            fi
 
+           if [ $TYPE = "tzupdater" ]; then
+               SYMLINK="${TYPE}.jar"
+           else
+               LATEST=$(gunzip < "${ARCHIVE_FILE}" | tar tvf - | grep 'java$')
+               # extract the path from the .../bin/java string
+               LATEST=${LATEST##* } # remove until the first blank
+               LATEST=${LATEST%/*} # remove /java from the string
+               LATEST=${LATEST%/*} # remove /bin from the string
+               SYMLINK="${TYPE}_latest"
+           fi
+
            # relative symlink preferred
            BACKUP=$(pwd)
            cd "${TARGET_DIR}"
 
-           if [ $TYPE = "tzupdater" ]; then
-               SYMLINK="${TYPE}.jar"
-           else
-               # find the java binary in the just created folder, because it is faster than to search in the .tar.gz
-               unset -v LATEST
-               for FILE in $(find . -name java); do
-                   [[ $FILE -nt $LATEST ]] && LATEST=$FILE
-               done
-               # extract the path from the .../bin/java string
-               LATEST=${LATEST%/*} # remove /java from the string
-               LATEST=${LATEST%/*} # remove /bin from the string
-
-               SYMLINK="${TYPE}_latest"
-           fi
            # update the symlink
            rm "${SYMLINK}" 2> /dev/null
            ln -s "${LATEST}" "${SYMLINK}"
