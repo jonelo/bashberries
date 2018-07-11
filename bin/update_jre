@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #
 # update_jre
-SCRIPT_VERSION=1.5.0
+SCRIPT_VERSION=1.6.0
 #
 # Downloads the latest x64 JRE/JDK tarball resp. the latest tzupdater zip
 # from the web, extracts it and creates/updates a symlink called <type>_latest
