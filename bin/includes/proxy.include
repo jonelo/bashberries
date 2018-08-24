@@ -3,8 +3,8 @@
 # proxy.include is an include file for bash scripts.
 # It provides proxy related functions.
 #
-# It is part of the bash-dwarfs project,
-# see also https://github.com/jonelo/bash-dwarfs
+# It is part of the bashberries project,
+# see also https://github.com/jonelo/bashberries
 #
 # To use it for your project, store this file where your bash script
 # is stored and source this file by calling

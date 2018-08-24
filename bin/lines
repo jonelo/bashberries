@@ -3,6 +3,9 @@
 # lines 1.0.0
 # Extracts a block of lines from a textfile
 #
+# It is part of the bashberries project
+# see also https://github.com/jonelo/bashberries
+#
 # Copyright 2017 Johann N. Loefflmann
 #
 # Licensed under the Apache License, Version 2.0 (the "License");

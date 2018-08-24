@@ -3,8 +3,8 @@
 # bigfiles 1.1.0
 # Determines the biggest files in a directory and its's subdirectories
 #
-# It is part of the bash-dwarfs project
-# see also https://github.com/jonelo/bash-dwarfs
+# It is part of the bashberries project
+# see also https://github.com/jonelo/bashberries
 #
 # Copyright 2017 Johann N. Loefflmann
 #

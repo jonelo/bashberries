@@ -2,7 +2,7 @@
 #
 # update_this 1.1.0
 #
-# This script downloads the latest scripts from the bash-dwarfs project to
+# This script downloads the latest scripts from the bashberries project to
 # the directory where this script is stored.
 #
 # Copyright 2017-2018 Johann N. Loefflmann
@@ -25,7 +25,7 @@ usage() {
 cat << END
 update_this v1.1.0, Copyright 2017-2018 Johann N. Loefflmann
 
-Downloads the latest bash scripts from the bash-dwarfs project on github
+Downloads the latest bash scripts from the bashberries project on github
 and updates any existing scripts in the directory that has been specified.
 
 Usage:
@@ -36,9 +36,9 @@ Parameter:
 
 Examples:
     ./update_this .
-                     updates the bash-dwarfs in the current working directory
+                     updates the bashberries in the current working directory
     bash <(curl -Ls https://goo.gl/qFmeCS) ~/bin
-                     updates the bash-dwarfs in ~/bin with just this line
+                     updates the bashberries in ~/bin with just this line
 END
 }
 
@@ -51,14 +51,14 @@ case $# in
        ;;
 esac
 
-TEMPZIP=/tmp/bash-dwarfs.$$.zip
-TEMPDIR=/tmp/bash-dwarfs.$$
+TEMPZIP=/tmp/bashberries.$$.zip
+TEMPDIR=/tmp/bashberries.$$
 
-curl -Lo $TEMPZIP https://github.com/jonelo/bash-dwarfs/archive/master.zip
+curl -Lo $TEMPZIP https://github.com/jonelo/bashberries/archive/master.zip
 unzip -d $TEMPDIR $TEMPZIP
 mkdir -p "${TARGET}/includes"
-mv $TEMPDIR/bash-dwarfs-master/bin/includes/* "${TARGET}/includes/"
-rmdir $TEMPDIR/bash-dwarfs-master/bin/includes
-mv $TEMPDIR/bash-dwarfs-master/bin/* "$TARGET/"
+mv $TEMPDIR/bashberries-master/bin/includes/* "${TARGET}/includes/"
+rmdir $TEMPDIR/bashberries-master/bin/includes
+mv $TEMPDIR/bashberries-master/bin/* "$TARGET/"
 rm -R $TEMPDIR
 rm $TEMPZIP

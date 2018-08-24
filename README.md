@@ -15,7 +15,7 @@ lines               | Extracts a block of lines from a textfile                 
 pwned               | Has your password been pwned?                                                  |
 update_jre          | Downloads the latests JRE from the web, extracts it and creates a symlink      |
 update_property     | Updates the value of a key/value pair in a property file                       |
-update_this         | Downloads all bash scripts from the bash-dwarfs project on github              |
+update_this         | Downloads all bash scripts from the bashberries project on github              |
 update_tzdatabase   | Updates the time zone database of your Java Runtime Environment                |
 update_tzupdater    | Updates the tzupdater.jar by calling update_jre -t tzupdater                   |
 
@@ -282,7 +282,7 @@ Examples:
 ```
 update_this v1.0.0, Copyright 2017 Johann N. Loefflmann
 
-Downloads the latest bash scripts from the bash-dwarfs project on github
+Downloads the latest bash scripts from the bashberries project on github
 and updates any existing scripts in the directory that has been specified.
 
 Usage:
@@ -293,9 +293,9 @@ Parameter:
 
 Examples:
     ./update_this .
-                     updates the bash-dwarfs in the current working directory
+                     updates the bashberries in the current working directory
     bash <(curl -Ls https://goo.gl/qFmeCS) ~/bin
-                     updates the bash-dwarfs in ~/bin with just this line
+                     updates the bashberries in ~/bin with just this line
 ```
 
 

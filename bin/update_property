@@ -3,8 +3,8 @@
 # update_property 1.1.0
 # Updates the value of a key/value pair in a property file.
 #
-# It is part of the bash-dwarfs project
-# see also https://github.com/jonelo/bash-dwarfs
+# It is part of the bashberries project
+# see also https://github.com/jonelo/bashberries
 #
 # Copyright 2017,2018 Johann N. Loefflmann
 #

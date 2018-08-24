@@ -9,6 +9,9 @@ SCRIPT_VERSION=1.6.0
 # jdk.java.net, and adoptopenjdk.net. The OS flavor of the JRE/JDK is determined
 # by the OS that you are running. Linux and macOS are supported.
 #
+# It is part of the bashberries project
+# see also https://github.com/jonelo/bashberries
+#
 # Copyright 2018 Johann N. Loefflmann
 #
 # Licensed under the Apache License, Version 2.0 (the "License");

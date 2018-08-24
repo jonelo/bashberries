@@ -8,6 +8,9 @@
 # http://www.oracle.com/technetwork/java/javasebusiness/downloads/tzupdater-lic-354297.txt
 # for you. Please don't run the script if you don't agree with it.
 #
+# It is part of the bashberries project
+# see also https://github.com/jonelo/bashberries
+#
 # Copyright 2017 Johann N. Loefflmann
 #
 # Licensed under the Apache License, Version 2.0 (the "License");

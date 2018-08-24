@@ -7,6 +7,9 @@
 # and updates the timezone database of your Java Runtime Environment
 # by calling tzupdater.jar
 #
+# It is part of the bashberries project
+# see also https://github.com/jonelo/bashberries
+#
 # Copyright 2017-2018 Johann N. Loefflmann
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
