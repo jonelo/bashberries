@@ -1,9 +1,15 @@
 # bash berries
-bash berries is a collection of tiny bash scripts that can do some work for you.
+bash berries is a set of tiny bash scripts that can do some work for you if you are an admin or a developer.
 
 Not only scripts are being provided by this project, but also include files that help you to write our own bash scripts more quickly.
 All bash berries have been tested on the latest stable Ubuntu LTS and macOS releases.
 If you don't set any parameters for a script, a short help will be printed.
+
+## Install or update
+
+```
+bash <(curl -Ls http://bit.ly/update-bashberries) ~/bin
+```
 
 ## Overview of the bash berries
 
@@ -32,7 +38,6 @@ proxy.include       | provides proxy related functions                          
 trim.include        | provides several trim functions                                                |
 version.include     | provides version specific functions                                            |
  
-                 
 ## The bash berries in detail
 
 ### bigfiles
