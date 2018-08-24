@@ -37,7 +37,7 @@ Parameter:
 Examples:
     ./update_bashberries .
                      updates the bashberries in the current working directory
-    bash <(curl -Ls https://goo.gl/qFmeCS) ~/bin
+    bash <(curl -Ls http://bit.ly/update-bashberries) ~/bin
                      updates the bashberries in ~/bin with just this line
 END
 }
