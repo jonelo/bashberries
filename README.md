@@ -5,6 +5,10 @@ Not only scripts are being provided by this project, but also include files that
 All bash berries have been tested on the latest stable Ubuntu LTS and macOS releases.
 If you don't set any parameters for a script, a short help will be printed.
 
+## User website
+
+https://jonelo.github.io/bashberries/
+
 ## Install or update
 
 ```
