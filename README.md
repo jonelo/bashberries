@@ -1,11 +1,11 @@
-# bash-dwarfs
-bash-dwarfs (note the hyphen between bash and dwarfs) is a collection of tiny bash scripts (as known as a dwarf) that can do some work for you. The term has nothing to do with bashing a dwarf since bash stands for "Bourne-again shell" - one of the most famous shells for GNU/Linux and Unix systems. No dwarf was harmed in the making of this collection of scripts ;-)
+# bash berries
+bash berries is a collection of tiny bash scripts that can do some work for you.
 
 Not only scripts are being provided by this project, but also include files that help you to write our own bash scripts more quickly.
-All bash-dwarfs have been tested on both Ubuntu 16.04.03 LTS and macOS 10.13.3.
+All bash berries have been tested on the latest stable Ubuntu LTS and macOS releases.
 If you don't set any parameters for a script, a short help will be printed.
 
-## Overview of the bash-dwarfs
+## Overview of the bash berries
 
 Script name         | Description                                                                    |
 ------------------- | ------------------------------------------------------------------------------ |
@@ -33,7 +33,7 @@ trim.include        | provides several trim functions                           
 version.include     | provides version specific functions                                            |
  
                  
-## The bash-dwarfs in detail
+## The bash berries in detail
 
 ### bigfiles
 
