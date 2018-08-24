@@ -280,7 +280,7 @@ Examples:
 
 ### update_bashberries
 ```
-update_bashberries v1.0.0, Copyright 2017 Johann N. Loefflmann
+update_bashberries v1.1.0, Copyright 2017-2018 Johann N. Loefflmann
 
 Downloads the latest bash scripts from the bashberries project on github
 and updates any existing scripts in the directory that has been specified.
@@ -294,7 +294,7 @@ Parameter:
 Examples:
     ./update_bashberries .
                      updates the bashberries in the current working directory
-    bash <(curl -Ls https://goo.gl/qFmeCS) ~/bin
+    bash <(curl -Ls http://bit.ly/update-bashberries) ~/bin
                      updates the bashberries in ~/bin with just this line
 ```
 
