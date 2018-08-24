@@ -15,7 +15,7 @@ lines               | Extracts a block of lines from a textfile                 
 pwned               | Has your password been pwned?                                                  |
 update_jre          | Downloads the latests JRE from the web, extracts it and creates a symlink      |
 update_property     | Updates the value of a key/value pair in a property file                       |
-update_this         | Downloads all bash scripts from the bashberries project on github              |
+update_bashberries  | Downloads all bash scripts from the bashberries project on github              |
 update_tzdatabase   | Updates the time zone database of your Java Runtime Environment                |
 update_tzupdater    | Updates the tzupdater.jar by calling update_jre -t tzupdater                   |
 
@@ -278,21 +278,21 @@ Examples:
             a blank as the delimiter, it also echoes the modified line.
 ```
 
-### update_this
+### update_bashberries
 ```
-update_this v1.0.0, Copyright 2017 Johann N. Loefflmann
+update_bashberries v1.0.0, Copyright 2017 Johann N. Loefflmann
 
 Downloads the latest bash scripts from the bashberries project on github
 and updates any existing scripts in the directory that has been specified.
 
 Usage:
-    update_this <directory>
+    update_bashberries <directory>
 
 Parameter:
     directory        the directory where the scripts should be stored
 
 Examples:
-    ./update_this .
+    ./update_bashberries .
                      updates the bashberries in the current working directory
     bash <(curl -Ls https://goo.gl/qFmeCS) ~/bin
                      updates the bashberries in ~/bin with just this line

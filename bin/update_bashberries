@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# update_this 1.1.0
+# update_bashberries 1.1.0
 #
 # This script downloads the latest scripts from the bashberries project to
 # the directory where this script is stored.
@@ -23,19 +23,19 @@ PATH=/bin:/usr/bin:/usr/sbin
 
 usage() {
 cat << END
-update_this v1.1.0, Copyright 2017-2018 Johann N. Loefflmann
+update_bashberries v1.1.0, Copyright 2017-2018 Johann N. Loefflmann
 
 Downloads the latest bash scripts from the bashberries project on github
 and updates any existing scripts in the directory that has been specified.
 
 Usage:
-    update_this <directory>
+    update_bashberries <directory>
 
 Parameter:
     directory        the directory where the scripts should be stored
 
 Examples:
-    ./update_this .
+    ./update_bashberries .
                      updates the bashberries in the current working directory
     bash <(curl -Ls https://goo.gl/qFmeCS) ~/bin
                      updates the bashberries in ~/bin with just this line
