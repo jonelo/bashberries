@@ -465,6 +465,9 @@ function main() {
                "${TARGET_DIR}/${TYPE}_latest/bin/java" -jar "${TARGET_DIR}/tzupdater.jar" -v -l
            fi
 
+          printf "New binaries have been stored to folder %s\n" "${TARGET_DIR}/${LATEST}"
+          printf "Symlink has been created as %s\n" "${TARGET_DIR}/${SYMLINK}"
+
        else
            printf "FATAL: Download failed.\n"
            exit 1
@@ -472,11 +475,15 @@ function main() {
     else
        printf "Skipping download, because it seems that you have downloaded %s already in the past. Use -f to force a download.\n" $DOWNLOAD_ADDRESS
 
+       printf "Symlink in order to access it, was stored as %s:\n" "${TARGET_DIR}/${TYPE}_latest"
+       ls -la "${TARGET_DIR}/${TYPE}_latest"
+
        # any jre, sjre or jdk, etc. with -z option is wanted
        if [ "$TYPE" != "tzupdater" ] && [ $ZOPTION -eq 1 ]; then
            # call the tzupdater by using the java binary from the JRE/JDK that we downloaded in the past
            "${TARGET_DIR}/${TYPE}_latest/bin/java" -jar "${TARGET_DIR}/tzupdater.jar" -v -l
        fi
+
     fi
 }
 
