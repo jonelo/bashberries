@@ -93,6 +93,8 @@ Options:
             For -s adoptopenjdk.net it can be
                 openjdk8          (OpenJDK 8 with Hotspot)
                 openjdk8-openj9   (OpenJDK 8 with OpenJ9)
+                openjdk9          (OpenJDK 8 with Hotspot)
+                openjdk9-openj9   (OpenJDK 8 with OpenJ9)
                 openjdk10         (OpenJDK 10 with Hotspot)
                 openjdk10-openj9  (OpenJDK 10 with OpenJ9)
 
@@ -274,18 +276,21 @@ function main() {
         # OS identifiers for the files are different on adoptopenjdk.net
         if [ "$OS_TAG" = "osx" ]; then
             OS_TAG="Mac"
+            OS_REGEX_TAG='[Mm]ac'
         fi
         if [ "$OS_TAG" = "linux" ]; then
             OS_TAG="Linux"
+            OS_REGEX_TAG='[Ll]inux'
         fi
 	    if [ "$TYPE" != "openjdk8" ] && [ "$TYPE" != "openjdk8-openj9" ] && \
+	       [ "$TYPE" != "openjdk9" ] && [ "$TYPE" != "openjdk9-openj9" ] && \
 	       [ "$TYPE" != "openjdk10" ] && [ "$TYPE" != "openjdk10-openj9" ]; then
             printf "ERROR: type %s is not supported by %s.\n" "$TYPE" "$SOURCE"
             exit 1
         fi
         # there is no openj9 on Mac
         if [ "$OS_TAG" = "Mac" ]; then
-            if [ "$TYPE" = "openjdk8-openj9" ] || [ "$TYPE" = "openjdk10-openj9" ]; then
+            if [ "$TYPE" = "openjdk8-openj9" ] || [ "$TYPE" = "openjdk9-openj9" ] || [ "$TYPE" = "openjdk10-openj9" ]; then
                 printf "ERROR: type %s (a JDK .tar.gz) is not supported on macOS by %s.\n" "$TYPE" "$SOURCE"
                 exit 1
             fi
@@ -364,12 +369,23 @@ function main() {
             parseFile "$TEMP_FILE" $REGEX
         fi
     elif [ $SOURCE = "adoptopenjdk.net" ]; then
-            DOWNLOAD_ADDRESS="https://github.com/AdoptOpenJDK/${TYPE}-releases/releases/latest"
+            if [ ${TYPE} = "openjdk9" ]; then
+                DOWNLOAD_ADDRESS="https://github.com/AdoptOpenJDK/${TYPE}-binaries/releases/latest"
+            else
+                DOWNLOAD_ADDRESS="https://github.com/AdoptOpenJDK/${TYPE}-releases/releases/latest"
+            fi
             downloadWebsite "$DOWNLOAD_ADDRESS" "$TEMP_FILE"
             REGEX='tag/([^"]+)'
             parseFile "$TEMP_FILE" $REGEX
-            # e. g. <a href="/AdoptOpenJDK/openjdk10-releases/releases/download/jdk-10.0.2%2B13/OpenJDK10_x64_Linux_jdk-10.0.2.13.tar.gz" rel="nofollow" class="d-flex flex-items-center">
-            REGEX='href=\"(/AdoptOpenJDK/'${TYPE}'-releases/releases/download/'${FOUND_ADDRESS}'/[^_]+_x64_'${OS_TAG}'_'${FOUND_ADDRESS/\%2B/.}'\.tar\.gz)\"'
+            # openjdk9 filenames have a different pattern than openjdk8 and openjdk10
+            if [ ${TYPE} = "openjdk9" ]; then
+                # e.g. https://github.com/AdoptOpenJDK/openjdk9-binaries/releases/download/jdk-9.0.4%2B11/OpenJDK9U_x64_mac_hotspot_2018-08-08-15-47.tar.gz
+                REGEX='href=\"(/AdoptOpenJDK/'${TYPE}'-binaries/releases/download/'${FOUND_ADDRESS}'/[^_]+_x64_'${OS_REGEX_TAG}'_[^\.]+\.tar\.gz)\"'
+            else
+                # e. g. <a href="/AdoptOpenJDK/openjdk10-releases/releases/download/jdk-10.0.2%2B13/OpenJDK10_x64_Linux_jdk-10.0.2.13.tar.gz" rel="nofollow" class="d-flex flex-items-center">
+                REGEX='href=\"(/AdoptOpenJDK/'${TYPE}'-releases/releases/download/'${FOUND_ADDRESS}'/[^_]+_x64_'${OS_TAG}'_'${FOUND_ADDRESS/\%2B/.}'\.tar\.gz)\"'
+            fi
+
             parseFile "$TEMP_FILE" $REGEX
             FOUND_ADDRESS="https://github.com${FOUND_ADDRESS}"
     elif [ $SOURCE = "jdk.java.net" ]; then
