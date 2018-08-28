@@ -291,13 +291,16 @@ Examples:
 
 ### update_bashberries
 ```
-update_bashberries v1.1.0, Copyright 2017-2018 Johann N. Loefflmann
+update_bashberries v1.2.0, Copyright 2017-2018 Johann N. Loefflmann
 
 Downloads the latest bash scripts from the bashberries project on github
 and updates any existing scripts in the directory that has been specified.
 
 Usage:
-    update_bashberries <directory>
+    update_bashberries [-n] <directory>
+
+Options:
+    -n               don't check for a new update_bashberries script
 
 Parameter:
     directory        the directory where the scripts should be stored
