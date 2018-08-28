@@ -123,10 +123,10 @@ Examples:
             updates the tzupdater in /opt/java/ and it updates a symlink
             called tzupdater.jar there.
     ./update_jre -az -s adoptopenjdk.net -t openjdk10
-            download both the latest tzupdater from oracle.com and
-            the latest OpenJDK10 build from adoptopenjdk.net, apply the
+            downloads both the latest tzupdater from oracle.com and
+            the latest OpenJDK10 build from adoptopenjdk.net, applies the
             latest timezone database from IANA to the OpenJDK by calling
-            the tzupdater tool. Symlink called .opendk10/openjdk10_latest
+            the tzupdater tool. Symlink called .openjdk10/openjdk10_latest
             will point to the latest and updated OpenJDK10 build.
 END
 exit 0
@@ -368,8 +368,8 @@ function main() {
             downloadWebsite "$DOWNLOAD_ADDRESS" "$TEMP_FILE"
             REGEX='tag/([^"]+)'
             parseFile "$TEMP_FILE" $REGEX
-            # e.g. <a href="/AdoptOpenJDK/openjdk8-openj9-releases/releases/download/jdk8u162-b12_openj9-0.8.0/OpenJDK8-OPENJ9_x64_Linux_jdk8u162-b12_openj9-0.8.0.tar.gz" rel="nofollow">
-            REGEX='href=\"(/AdoptOpenJDK/'${TYPE}'-releases/releases/download/'${FOUND_ADDRESS}'/[^_]+_x64_'${OS_TAG}'_'${FOUND_ADDRESS}'\.tar\.gz)\"'
+            # e. g. <a href="/AdoptOpenJDK/openjdk10-releases/releases/download/jdk-10.0.2%2B13/OpenJDK10_x64_Linux_jdk-10.0.2.13.tar.gz" rel="nofollow" class="d-flex flex-items-center">
+            REGEX='href=\"(/AdoptOpenJDK/'${TYPE}'-releases/releases/download/'${FOUND_ADDRESS}'/[^_]+_x64_'${OS_TAG}'_'${FOUND_ADDRESS/\%2B/.}'\.tar\.gz)\"'
             parseFile "$TEMP_FILE" $REGEX
             FOUND_ADDRESS="https://github.com${FOUND_ADDRESS}"
     elif [ $SOURCE = "jdk.java.net" ]; then
