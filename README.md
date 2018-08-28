@@ -154,7 +154,7 @@ Examples:
 
 ### update_jre
 ```
-update_jre v1.6.0, Copyright 2018 Johann N. Loefflmann
+update_jre v1.7.0, Copyright 2018 Johann N. Loefflmann
 
 Downloads the latest x64 JRE/JDK tarball resp. the latest tzupdater zip from
 the web, extracts it and creates/updates a symlink called <type>_latest
@@ -214,6 +214,8 @@ Options:
             For -s adoptopenjdk.net it can be
                 openjdk8          (OpenJDK 8 with Hotspot)
                 openjdk8-openj9   (OpenJDK 8 with OpenJ9)
+                openjdk9          (OpenJDK 8 with Hotspot)
+                openjdk9-openj9   (OpenJDK 8 with OpenJ9)
                 openjdk10         (OpenJDK 10 with Hotspot)
                 openjdk10-openj9  (OpenJDK 10 with OpenJ9)
 
@@ -244,10 +246,10 @@ Examples:
             updates the tzupdater in /opt/java/ and it updates a symlink
             called tzupdater.jar there.
     ./update_jre -az -s adoptopenjdk.net -t openjdk10
-            download both the latest tzupdater from oracle.com and
-            the latest OpenJDK10 build from adoptopenjdk.net, apply the
+            downloads both the latest tzupdater from oracle.com and
+            the latest OpenJDK10 build from adoptopenjdk.net, applies the
             latest timezone database from IANA to the OpenJDK by calling
-            the tzupdater tool. Symlink called .opendk10/openjdk10_latest
+            the tzupdater tool. Symlink called .openjdk10/openjdk10_latest
             will point to the latest and updated OpenJDK10 build.
 ```
 
