@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# update_bashberries 1.1.0
+# update_bashberries 1.2.0
 #
 # This script downloads the latest scripts from the bashberries project to
 # the directory where this script is stored.
@@ -20,16 +20,21 @@
 # limitations under the License.
 
 PATH=/bin:/usr/bin:/usr/sbin
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+SCRIPT_NAME="${0##*/}"
 
 usage() {
 cat << END
-update_bashberries v1.1.0, Copyright 2017-2018 Johann N. Loefflmann
+update_bashberries v1.2.0, Copyright 2017-2018 Johann N. Loefflmann
 
 Downloads the latest bash scripts from the bashberries project on github
 and updates any existing scripts in the directory that has been specified.
 
 Usage:
-    update_bashberries <directory>
+    update_bashberries [-n] <directory>
+
+Options:
+    -n               don't check for a new update_bashberries script
 
 Parameter:
     directory        the directory where the scripts should be stored
@@ -42,23 +47,71 @@ Examples:
 END
 }
 
-# parameters
-case $# in
-    1) TARGET=$1
-       ;;
-    *) usage
-       exit
-       ;;
-esac
 
-TEMPZIP=/tmp/bashberries.$$.zip
-TEMPDIR=/tmp/bashberries.$$
+main() {
 
-curl -Lo $TEMPZIP https://github.com/jonelo/bashberries/archive/master.zip
-unzip -d $TEMPDIR $TEMPZIP
-mkdir -p "${TARGET}/includes"
-mv $TEMPDIR/bashberries-master/bin/includes/* "${TARGET}/includes/"
-rmdir $TEMPDIR/bashberries-master/bin/includes
-mv $TEMPDIR/bashberries-master/bin/* "$TARGET/"
-rm -R $TEMPDIR
-rm $TEMPZIP
+    # options
+    updateWanted=1
+    while getopts 'n' OPTION
+    do
+        case $OPTION in
+        n) updateWanted=0
+           ;;
+        ?) usage
+           ;;
+        esac
+    done
+    shift $(($OPTIND -1))
+
+    # parameters
+    case $# in
+        1) TARGET=$1
+           ;;
+        *) usage
+           exit
+           ;;
+    esac
+
+    # do we have a new update_bashberries script?
+    if [ $updateWanted -eq 1 ]; then
+
+        printf "Checking whether there is a new update script ...\n"
+        curl -Lo $0.new https://raw.githubusercontent.com/jonelo/bashberries/master/bin/update_bashberries
+        diffs=$(diff $0 $0.new | wc -l)
+
+        # is update required?
+        if [ $diffs -gt 0 ]; then
+            printf "There is a new update script availabe. Replacing the old with the new one ...\n"
+            # fix permissions
+            chmod u+x $0.new
+
+            mv $0 $0.old
+            mv $0.new $0
+            rm $0.old
+            # let's call the new update_bashberries script
+            # with no update request
+            printf "Calling the new one update script ...\n"
+            $0 -n "$@"
+            # and exit this (old) process
+            exit
+        else
+            printf "You are running the latest update script.\n"
+        fi
+    fi
+
+    # from here we can assume that we have the latest update script
+    TEMPZIP=/tmp/bashberries.$$.zip
+    TEMPDIR=/tmp/bashberries.$$
+
+    curl -Lo $TEMPZIP https://github.com/jonelo/bashberries/archive/master.zip
+    unzip -d $TEMPDIR $TEMPZIP
+    mkdir -p "${TARGET}/includes"
+    mv $TEMPDIR/bashberries-master/bin/includes/* "${TARGET}/includes/"
+    rmdir $TEMPDIR/bashberries-master/bin/includes
+    mv $TEMPDIR/bashberries-master/bin/* "$TARGET/"
+    rm -R $TEMPDIR
+    rm $TEMPZIP
+}
+
+main "$@"
+
