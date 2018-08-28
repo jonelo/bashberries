@@ -90,7 +90,7 @@ main() {
             rm $0.old
             # let's call the new update_bashberries script
             # with no update request
-            printf "Calling the new one update script ...\n"
+            printf "Calling the new update script ...\n"
             $0 -n "$@"
             # and exit this (old) process
             exit
