@@ -88,6 +88,7 @@ Options:
                  jre                   (latest JRE)
 
             For -s jdk.java.net this can be
+                openjdk12              (OpenJDK 12)
                 openjdk11              (OpenJDK 11)
                 openjdk10              (OpenJDK 10)
 
@@ -289,9 +290,9 @@ function main() {
             OS_TAG="Linux"
             OS_REGEX_TAG='[Ll]inux'
         fi
-	    if [ "$TYPE" != "openjdk8" ] && [ "$TYPE" != "openjdk8-openj9" ] && \
+	    if [ "$TYPE" != "openjdk10" ] && [ "$TYPE" != "openjdk10-openj9" ] && \
 	       [ "$TYPE" != "openjdk9" ] && [ "$TYPE" != "openjdk9-openj9" ] && \
-	       [ "$TYPE" != "openjdk10" ] && [ "$TYPE" != "openjdk10-openj9" ]; then
+	       [ "$TYPE" != "openjdk8" ] && [ "$TYPE" != "openjdk8-openj9" ]; then
             printf "ERROR: type %s is not supported by %s.\n" "$TYPE" "$SOURCE"
             exit 1
         fi
@@ -314,7 +315,7 @@ function main() {
     fi
 
     if [ "$SOURCE" = "jn" ] || [ "$SOURCE" = "jdk.java.net" ]; then
-        if [ "$TYPE" != "openjdk10" ] && [ "$TYPE" != "openjdk11" ]; then
+        if [ "$TYPE" != "openjdk12" ] && [ "$TYPE" != "openjdk11" ] && [ "$TYPE" != "openjdk10" ]; then
             printf "ERROR: type %s is not supported by %s.\n" "$TYPE" "$SOURCE"
             exit 1
         fi
@@ -386,6 +387,7 @@ function main() {
             REGEX='(http://download.oracle.com/otn-pub/java/[^_]+_'${OS_TAG}'[^\.]+\.tar\.gz)\"'
             parseFile "$TEMP_FILE" $REGEX
         fi
+
     elif [ $SOURCE = "an" ] || [ $SOURCE = "adoptopenjdk.net" ]; then
             if [ ${TYPE} = "openjdk9" ]; then
                 DOWNLOAD_ADDRESS="https://github.com/AdoptOpenJDK/${TYPE}-binaries/releases/latest"
@@ -405,14 +407,18 @@ function main() {
             fi
             parseFile "$TEMP_FILE" $REGEX
             FOUND_ADDRESS="https://github.com${FOUND_ADDRESS}"
+
     elif [ $SOURCE = "jn" ] || [ $SOURCE = "jdk.java.net" ]; then
             JDKVERSION=${TYPE:7} # remove the openjdk string
             DOWNLOAD_ADDRESS="http://jdk.java.net/${JDKVERSION}/"
             downloadWebsite "$DOWNLOAD_ADDRESS" "$TEMP_FILE"
             # e.g. <td><a href="https://download.java.net/java/GA/jdk10/10.0.1/fb4372174a714e6b8c52526dc134031e/10//openjdk-10.0.1_linux-x64_bin.tar.gz">
             # e.g. <td><a href="https://download.java.net/java/early_access/jdk11/20/GPL/openjdk-11-ea+20_linux-x64_bin.tar.gz">
-            REGEX='href=\"(https://download.java.net/[^_]+_'${OS_TAG}'-x64_bin\.tar\.gz)\">'
+            # bash doesn't support non-greedy regex with the =~ comparator. We want to find the understore just before the $OS_TAG,
+            # but there is also an underscore in early_access, so we overcome this by hopping over at least two slashes in the path
+            REGEX='href=\"(https://download.java.net/([^/]+/){2}[^_]+_'${OS_TAG}'-x64_bin\.tar\.gz)\">'
             parseFile "$TEMP_FILE" $REGEX
+
     elif [ $SOURCE = "jc" ] || [ $SOURCE = "java.com" ]; then
             DOWNLOAD_ADDRESS="https://www.java.com/en/download/manual.jsp"
             # e.g. <a title="Download Java software for Linux x64" href="http://javadl.oracle.com/webapps/download/AutoDL?BundleId=233162_512cd62ec5174c3487ac17c61aaa89e8" ...>
@@ -421,6 +427,7 @@ function main() {
             IDENTIFIER='Linux[[:space:]]x64</a>'
             REGEX='(http[s]?://javadl.oracle.com/webapps/download/AutoDL\?BundleId=[^"]+)"[^>]*>[[:space:]]*'${IDENTIFIER}
             parseFile "$TEMP_FILE" $REGEX
+
     elif [ $SOURCE = "zo" ] || [ $SOURCE = "zulu.org" ]; then
             DOWNLOAD_ADDRESS="https://zulu.org/download/"
             downloadWebsite "$DOWNLOAD_ADDRESS" "$TEMP_FILE"
