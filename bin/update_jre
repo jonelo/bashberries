@@ -258,6 +258,7 @@ function main() {
     done
     shift $(($OPTIND -1))
 
+    SUFFIX=".tar.gz"
     # option combination check
     if [ "$SOURCE" = "oc" ] || [ "$SOURCE" = "oracle.com" ] || [ $ZOPTION -eq 1 ]; then
         licenseAcceptedRequired $ACCEPT
@@ -306,6 +307,9 @@ function main() {
     if [ "$SOURCE" = "zo" ] || [ "$SOURCE" = "zulu.org" ]; then
         if [ "$OS_TAG" = "osx" ]; then
             OS_TAG="macosx"
+            if [ "$TYPE" = "jdk10" ] || [ "$TYPE" = "jdk8" ]; then
+                SUFFIX=".zip"
+            fi
         fi
     fi
 
@@ -420,7 +424,7 @@ function main() {
     elif [ $SOURCE = "zo" ] || [ $SOURCE = "zulu.org" ]; then
             DOWNLOAD_ADDRESS="https://zulu.org/download/"
             downloadWebsite "$DOWNLOAD_ADDRESS" "$TEMP_FILE"
-            REGEX='(https://cdn.azul.com/zulu/bin/[^\-]+-'${TYPE}'[^\-]*-'${OS_TAG,}'_x64.tar.gz)'
+            REGEX='(https://cdn.azul.com/zulu/bin/[^\-]+-'${TYPE}'[^\-]*-'${OS_TAG}'_x64'${SUFFIX}')'
             parseFile "$TEMP_FILE" $REGEX
     fi
 
@@ -463,18 +467,27 @@ function main() {
                # extracting the .zip
                unzip -d "${TARGET_DIR}" -o "${ARCHIVE_FILE}"
            else
-               gunzip < "${ARCHIVE_FILE}" | tar xfv - -C "${TARGET_DIR}"
+               if [ "${SUFFIX}" = ".tar.gz" ]; then
+                   gunzip < "${ARCHIVE_FILE}" | tar xfv - -C "${TARGET_DIR}"
+               else
+                   unzip -d "${TARGET_DIR}" -o "${ARCHIVE_FILE}"
+               fi
            fi
 
+           # determine SYMLINK name
            if [ $TYPE = "tzupdater" ]; then
                SYMLINK="${TYPE}.jar"
            else
-               LATEST=$(gunzip < "${ARCHIVE_FILE}" | tar tvf - | grep '/bin/java$')
-               # extract the path from the .../bin/java string
-               LATEST=${LATEST##* } # remove until the first blank
-               LATEST=${LATEST%/*} # remove /java from the string
-               LATEST=${LATEST%/*} # remove /bin from the string
-               SYMLINK="${TYPE}_latest"
+               if [ "${SUFFIX}" = ".tar.gz" ]; then
+                   LATEST=$(gunzip < "${ARCHIVE_FILE}" | tar tvf - | grep '/bin/java$')
+                else
+                   LATEST=$(unzip -l "${ARCHIVE_FILE}" | grep '/bin/java$')
+                fi
+                # extract the path from the .../bin/java string
+                LATEST=${LATEST##* } # remove until the first blank
+                LATEST=${LATEST%/*} # remove /java from the string
+                LATEST=${LATEST%/*} # remove /bin from the string
+                SYMLINK="${TYPE}_latest"
            fi
 
            # relative symlink preferred
