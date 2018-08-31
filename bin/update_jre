@@ -532,12 +532,12 @@ function main() {
        printf "Skipping download, because it seems that you have downloaded %s already in the past. Use -f to force a download.\n" $DOWNLOAD_ADDRESS
 
        if [ "$TYPE" = "tzupdater" ]; then
-           printf "Symlink in order to access it, was stored as %s:\n" "${TARGET_DIR}/${TYPE}.jar"
-           ls -la "${TARGET_DIR}/${TYPE}.jar"
+           SYMLINK="${TYPE}.jar"
        else
-           printf "Symlink in order to access it, was stored as %s:\n" "${TARGET_DIR}/${TYPE}_latest"
-           ls -la "${TARGET_DIR}/${TYPE}_latest"
+           SYMLINK="${TYPE}_latest"
        fi
+       printf "Symlink in order to access it, was stored as %s:\n" "${TARGET_DIR}/${SYMLINK}"
+       ls -la "${TARGET_DIR}/${SYMLINK}"
 
        # any jre, sjre or jdk, etc. with -z option is wanted
        if [ "$TYPE" != "tzupdater" ] && [ $ZOPTION -eq 1 ]; then
