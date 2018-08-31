@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #
 # update_jre
-SCRIPT_VERSION=1.8.0
+SCRIPT_VERSION=1.9.0
 #
 # Downloads the latest x64 JRE/JDK tarball resp. the latest tzupdater zip
 # from the web, extracts it and creates/updates a symlink called <type>_latest
@@ -38,12 +38,12 @@ update_jre v${SCRIPT_VERSION}, Copyright 2018 Johann N. Loefflmann
 Downloads the latest x64 JRE/JDK tarball resp. the latest tzupdater zip from
 the web, extracts it and creates/updates a symlink called <type>_latest
 resp. tzupdater.jar. Supports multiple sources, such as oracle.com, java.com,
-jdk.java.net, and adoptopenjdk.net. The latest timezone database can be applied
-to the requested JRE/JDK as well so that you have the most possible up to date
-JRE/JDK within a Java family from your preferred source. And since the symlink
-always points to the latest JRE/JDK you can update the JRE/JDK both fast and
-comfortable. The OS flavor of the JRE/JDK is determined by the OS that you are
-running. Linux and macOS are supported.
+jdk.java.net, adoptopenjdk.net, and zulu.org. The latest timezone database can
+be applied to the requested JRE/JDK as well so that you have the most possible
+up to date JRE/JDK within a Java family from your preferred source. And since
+the symlink always points to the latest JRE/JDK you can update the JRE/JDK
+both fast and comfortable. The OS flavor of the JRE/JDK is determined by the
+OS that you are running. Both GNU/Linux and macOS are supported.
 
 Usage:
     update_jre [ [-h] | [-a] [-d] [-f] [-k] [-s source] [-t type] [path] ]
@@ -328,7 +328,7 @@ function main() {
         fi
         if [ "$OS_TAG" = "osx" ]; then
             printf "ERROR: type %s (a JRE .tar.gz) is not supported on macOS by %s.\n" "$TYPE" "$SOURCE"
-           # exit 1
+            exit 1
         fi
     fi
 
@@ -424,8 +424,8 @@ function main() {
             # e.g. <a title="Download Java software for Linux x64" href="http://javadl.oracle.com/webapps/download/AutoDL?BundleId=233162_512cd62ec5174c3487ac17c61aaa89e8" ...>
             # Linux x64</a>
             downloadWebsite "$DOWNLOAD_ADDRESS" "$TEMP_FILE"
-            IDENTIFIER='Linux[[:space:]]x64</a>'
-            REGEX='(http[s]?://javadl.oracle.com/webapps/download/AutoDL\?BundleId=[^"]+)"[^>]*>[[:space:]]*'${IDENTIFIER}
+            IDENTIFIER='Linux[[:space:]]x64'
+            REGEX='(http[s]?://javadl.oracle.com/webapps/download/AutoDL\?BundleId=[^"]+)"[^>]*>[[:space:]]*'${IDENTIFIER}'</a>'
             parseFile "$TEMP_FILE" $REGEX
 
     elif [ $SOURCE = "zo" ] || [ $SOURCE = "zulu.org" ]; then
