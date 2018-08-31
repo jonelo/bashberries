@@ -457,7 +457,7 @@ function main() {
        if [ -f "${ARCHIVE_FILE}" ]; then
            rm "${ARCHIVE_FILE}"
        fi
-       if [ "$SOURCE" = "oracle.com" ]; then
+       if [ "$SOURCE" = "oc" ] || [ "$SOURCE" = "oracle.com" ]; then
            curl -Lo "${ARCHIVE_FILE}" -j -k -L -H "Cookie: oraclelicense=accept-securebackup-cookie" "$DOWNLOAD_ADDRESS"
        else
            curl -Lo "${ARCHIVE_FILE}" "$DOWNLOAD_ADDRESS"
@@ -516,7 +516,7 @@ function main() {
            # any jre, sjre or jdk, etc. with -z option is wanted
            if [ "$TYPE" != "tzupdater" ] && [ $ZOPTION -eq 1 ]; then
                # call the tzupdater by using the java binary from the JRE/JDK that we have just downloaded
-               # specify the expected property as I already described in Jan 2007:
+               # specify the expected property as I described in Jan 2007:
                # https://lists.apple.com/archives/Java-dev/2007/Jan/msg00060.html
                "${TARGET_DIR}/${TYPE}_latest/bin/java" -Djava.vendor="Oracle Corporation" -jar "${TARGET_DIR}/tzupdater.jar" -v -l
            fi
@@ -531,13 +531,18 @@ function main() {
     else
        printf "Skipping download, because it seems that you have downloaded %s already in the past. Use -f to force a download.\n" $DOWNLOAD_ADDRESS
 
-       printf "Symlink in order to access it, was stored as %s:\n" "${TARGET_DIR}/${TYPE}_latest"
-       ls -la "${TARGET_DIR}/${TYPE}_latest"
+       if [ "$TYPE" = "tzupdater" ]; then
+           printf "Symlink in order to access it, was stored as %s:\n" "${TARGET_DIR}/${TYPE}.jar"
+           ls -la "${TARGET_DIR}/${TYPE}.jar"
+       else
+           printf "Symlink in order to access it, was stored as %s:\n" "${TARGET_DIR}/${TYPE}_latest"
+           ls -la "${TARGET_DIR}/${TYPE}_latest"
+       fi
 
        # any jre, sjre or jdk, etc. with -z option is wanted
        if [ "$TYPE" != "tzupdater" ] && [ $ZOPTION -eq 1 ]; then
            # call the tzupdater by using the java binary from the JRE/JDK that we downloaded in the past
-           "${TARGET_DIR}/${TYPE}_latest/bin/java" -jar "${TARGET_DIR}/tzupdater.jar" -v -l
+           "${TARGET_DIR}/${TYPE}_latest/bin/java" -Djava.vendor="Oracle Corporation" -jar "${TARGET_DIR}/tzupdater.jar" -v -l
        fi
 
     fi
