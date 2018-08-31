@@ -516,7 +516,9 @@ function main() {
            # any jre, sjre or jdk, etc. with -z option is wanted
            if [ "$TYPE" != "tzupdater" ] && [ $ZOPTION -eq 1 ]; then
                # call the tzupdater by using the java binary from the JRE/JDK that we have just downloaded
-               "${TARGET_DIR}/${TYPE}_latest/bin/java" -jar "${TARGET_DIR}/tzupdater.jar" -v -l
+               # specify the expected property as I already described in Jan 2007:
+               # https://lists.apple.com/archives/Java-dev/2007/Jan/msg00060.html
+               "${TARGET_DIR}/${TYPE}_latest/bin/java" -Djava.vendor="Oracle Corporation" -jar "${TARGET_DIR}/tzupdater.jar" -v -l
            fi
 
           printf "New binaries have been stored to folder %s\n" "${TARGET_DIR}/${LATEST}"
