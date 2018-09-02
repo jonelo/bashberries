@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #
 # update_jre
-SCRIPT_VERSION=1.10.0
+SCRIPT_VERSION=1.11.0
 #
 # Downloads the latest x64 JRE/JDK tarball resp. the latest tzupdater zip
 # from the web, extracts it and creates/updates a symlink called <type>_latest
@@ -521,9 +521,12 @@ function main() {
                "${TARGET_DIR}/${TYPE}_latest/bin/java" -Djava.vendor="Oracle Corporation" -jar "${TARGET_DIR}/tzupdater.jar" -v -l
            fi
 
-          printf "New binaries have been stored to folder %s\n" "${TARGET_DIR}/${LATEST}"
+          printf "\nNew binaries have been stored to folder %s\n" "${TARGET_DIR}/${LATEST}"
           printf "Symlink has been created as %s\n" "${TARGET_DIR}/${SYMLINK}"
-
+          EXECUTABLE="${TARGET_DIR}/${SYMLINK}/bin/java"
+          # specifying a 10 MB max heap in order to avoid too big heap values on large systems due to Java's ergonomics
+          printf "\nExecuting \"%s -Xmx10m -version\" ...\n" "${EXECUTABLE}"
+          "${TARGET_DIR}/${SYMLINK}/bin/java" -Xmx10m -version
        else
            printf "FATAL: Download failed.\n"
            exit 1
@@ -536,7 +539,7 @@ function main() {
        else
            SYMLINK="${TYPE}_latest"
        fi
-       printf "Symlink in order to access it, was stored as %s:\n" "${TARGET_DIR}/${SYMLINK}"
+       printf "\nSymlink in order to access it, was stored as %s:\n" "${TARGET_DIR}/${SYMLINK}"
        ls -la "${TARGET_DIR}/${SYMLINK}"
 
        # any jre, sjre or jdk, etc. with -z option is wanted
