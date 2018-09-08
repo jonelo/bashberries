@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 #
-# update_bashberries 1.2.0
+# update_bashberries
+SCRIPT_VERSION=1.3.0
 #
 # This script downloads the latest scripts from the bashberries project to
 # the directory where this script is stored.
@@ -25,7 +26,7 @@ SCRIPT_NAME="${0##*/}"
 
 usage() {
 cat << END
-update_bashberries v1.2.0, Copyright 2017-2018 Johann N. Loefflmann
+update_bashberries v1.3.0, Copyright 2017-2018 Johann N. Loefflmann
 
 Downloads the latest bash scripts from the bashberries project on github
 and updates any existing scripts in the directory that has been specified.
@@ -72,30 +73,37 @@ main() {
            ;;
     esac
 
-    # do we have a new update_bashberries script?
+    # do we have the latest update_bashberries script?
     if [ $updateWanted -eq 1 ]; then
 
         printf "Checking whether there is a new update script ...\n"
-        curl -Lo $0.new https://raw.githubusercontent.com/jonelo/bashberries/master/bin/update_bashberries
-        diffs=$(diff $0 $0.new | wc -l)
+        curl -Lo "$0.new" https://raw.githubusercontent.com/jonelo/bashberries/master/bin/update_bashberries
+        if [ -f "$0.new" ]; then
+            diffs=$(diff "$0" "$0.new" | wc -l)
 
-        # is update required?
-        if [ $diffs -gt 0 ]; then
-            printf "There is a new update script availabe. Replacing the old with the new one ...\n"
-            # fix permissions
-            chmod u+x $0.new
+            # is an update required?
+            if [ $diffs -gt 0 ]; then
+                printf "There is a new update script availabe. Replacing the old with the new one ...\n"
+                # fix permissions
+                chmod u+x "$0.new"
 
-            mv $0 $0.old
-            mv $0.new $0
-            rm $0.old
-            # let's call the new update_bashberries script
-            # with no update request
-            printf "Calling the new update script ...\n"
-            $0 -n "$@"
-            # and exit this (old) process
-            exit
+                mv "$0" "$0.old"
+                mv "$0.new" "$0"
+                rm "$0.old"
+                # let's call the new update_bashberries script
+                # with no update request
+                printf "Calling the new update script ...\n"
+                $0 -n "$@"
+                # and exit this (old) process
+                exit
+            else
+                printf "You are running the latest update script.\n"
+                # cleanup
+                rm "$0.new"
+            fi
         else
-            printf "You are running the latest update script.\n"
+            printf "There seems to be a problem with the internet connection. Exit.\n"
+            exit
         fi
     fi
 
