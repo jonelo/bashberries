@@ -73,7 +73,9 @@ main() {
            ;;
     esac
 
-    echo ">$0<"
+    # if we try to install/update it using "bash <(curl -Ls http://bit.ly/update-bashberries) .",
+    # $0 becomes a file descriptor and not a file. In this case, we don't check for an update, because
+    # we have the latest script already
     if [ ! -f "$0" ]; then
         updateWanted=0
     fi

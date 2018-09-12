@@ -12,7 +12,7 @@ https://jonelo.github.io/bashberries/
 ## Install or update
 
 ```
-bash <(curl -Ls http://bit.ly/update-bashberries) -n ~/bin
+bash <(curl -Ls http://bit.ly/update-bashberries) ~/bin
 ```
 
 ## Overview of the bash berries
