@@ -73,6 +73,11 @@ main() {
            ;;
     esac
 
+    echo ">$0<"
+    if [ ! -f "$0" ]; then
+        updateWanted=0
+    fi
+
     # do we have the latest update_bashberries script?
     if [ $updateWanted -eq 1 ]; then
 
