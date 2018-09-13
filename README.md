@@ -256,7 +256,7 @@ Examples:
 
 ### update_property
 ```
-update_property v1.1.0, Copyright 2017,2018 Johann N. Loefflmann
+update_property v1.2.0, Copyright 2017,2018 Johann N. Loefflmann
 
 Updates the value of a key/value pair in a property file.
 The script saves existing comments and also the order of the properties.
@@ -265,11 +265,13 @@ Usage:
     update_property [-d <delimiter>] [-e] [-f] [-q] [file key value]
 
 Options:
+    -a      keeps the existing value and appends the new value.
     -d      delimiter, delimits the key and the value.
             If omitted the equal sign is assumed.
     -e      echo the updated line of the file.
     -f      force to append the key/value pair to the file even if the key is
             not in the property file yet.
+    -p      keeps the existing value and prepends the new value.
     -q      set quotes around the value when writing the value.
 
 Parameters:
