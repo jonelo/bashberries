@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
-# update_property 1.1.0
+# update_property
+SCRIPT_VERSION=1.2.0
 # Updates the value of a key/value pair in a property file.
 #
 # It is part of the bashberries project
@@ -24,7 +25,7 @@ PATH=/bin:/usr/bin:/usr/sbin
 
 usage() {
 cat << END
-update_property v1.1.0, Copyright 2017,2018 Johann N. Loefflmann
+update_property v${SCRIPT_VERSION}, Copyright 2017,2018 Johann N. Loefflmann
 
 Updates the value of a key/value pair in a property file.
 The script saves existing comments and also the order of the properties.
@@ -33,11 +34,13 @@ Usage:
     update_property [-d <delimiter>] [-e] [-f] [-q] [file key value]
 
 Options:
+    -a      keeps the existing value and appends the new value.
     -d      delimiter, delimits the key and the value.
             If omitted the equal sign is assumed.
     -e      echo the updated line of the file.
     -f      force to append the key/value pair to the file even if the key is
             not in the property file yet.
+    -p      keeps the existing value and prepends the new value.
     -q      set quotes around the value when writing the value.
 
 Parameters:
@@ -59,36 +62,52 @@ END
 exit 1
 }
 
+
 function printUpdatedValueDependentOnFlagQ {
-    if [ ${qflag} -eq 1 ]; then
-        printf "%s%s\"%s\"\n" "${KEY}" "${DELIMITER}" "${VALUE}"
-    else
-        printf "%s%s%s\n" "${KEY}" "${DELIMITER}" "${VALUE}"
+    OLDVALUE="$1"
+    ACTUALVALUE="${NEWVALUE}"
+    if [ ${aflag} -eq 1 ]; then
+        ACTUALVALUE="${OLDVALUE}${NEWVALUE}"
     fi
+    if [ ${pflag} -eq 1 ]; then
+        ACTUALVALUE="${NEWVALUE}${OLDVALUE}"
+    fi
+    if [ ${qflag} -eq 1 ]; then
+        FORMAT="%s%s\"%s\"\n"
+    else
+        FORMAT="%s%s%s\n"
+    fi
+    printf "${FORMAT}" "${KEY}" "${DELIMITER}" "${ACTUALVALUE}"
 }
 
 function printUpdatedValueDependentOnFlagE() {
     if [ ${eflag} -eq 1 ]; then
-        printUpdatedValueDependentOnFlagQ | tee -a "${TEMPFILE}"
+        printUpdatedValueDependentOnFlagQ "$1" | tee -a "${TEMPFILE}"
     else
-        printUpdatedValueDependentOnFlagQ >> "${TEMPFILE}"
+        printUpdatedValueDependentOnFlagQ "$1" >> "${TEMPFILE}"
     fi
 }
 
 main() {
     # options
+    aflag=0
+    pflag=0
     qflag=0
     eflag=0
     fflag=0
     DELIMITER='='
-    while getopts 'd:efq' OPTION
+    while getopts 'd:efqap' OPTION
     do
         case $OPTION in
+        a) aflag=1
+           ;;
         d) DELIMITER="$OPTARG"
            ;;
         e) eflag=1
            ;;
         f) fflag=1
+           ;;
+        p) pflag=1
            ;;
         q) qflag=1
            ;;
@@ -102,7 +121,7 @@ main() {
     case $# in
         3) FILE=$1;
            KEY=$2;
-           VALUE=$3;
+           NEWVALUE=$3;
            ;;
         *) usage
            ;;
@@ -120,10 +139,11 @@ main() {
     while read LINE
     do
         # LINE starts with key=
-        if [[ "${LINE}" =~ ^${KEY}${DELIMITER} ]]; then
+        if [[ "${LINE}" =~ ^${KEY}${DELIMITER}(.*)$ ]]; then
+            OLDVALUE="${BASH_REMATCH[1]}"
             # print the new key/value pair
             FOUND=1
-            printUpdatedValueDependentOnFlagE
+            printUpdatedValueDependentOnFlagE "${OLDVALUE}"
         else
             # just print the existing line
             printf "%s\n" "${LINE}" >> "${TEMPFILE}"
@@ -135,7 +155,7 @@ main() {
     if [ ${FOUND} -eq 0 ]; then
         # append it if that is wanted wanted by the user
         if [ ${fflag} -eq 1 ]; then
-            printUpdatedValueDependentOnFlagE
+            printUpdatedValueDependentOnFlagE ""
         else
             printf "Error: the key called \"%s\" has not been found in \"%s\". " \
                 "${KEY}" "${FILE}" >&2
