@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #
-# update_jre
-SCRIPT_VERSION=1.11.0
+# update_jdk
+SCRIPT_VERSION=1.12.0
 #
 # Downloads the latest x64 JRE/JDK tarball resp. the latest tzupdater zip
 # from the web, extracts it and creates/updates a symlink called <type>_latest
@@ -33,7 +33,7 @@ SCRIPT_NAME="${0##*/}"
 
 usage() {
 cat << END
-update_jre v${SCRIPT_VERSION}, Copyright 2018 Johann N. Loefflmann
+update_jdk v${SCRIPT_VERSION}, Copyright 2018 Johann N. Loefflmann
 
 Downloads the latest x64 JRE/JDK tarball resp. the latest tzupdater zip from
 the web, extracts it and creates/updates a symlink called <type>_latest
@@ -46,7 +46,7 @@ both fast and comfortable. The OS flavor of the JRE/JDK is determined by the
 OS that you are running. Both GNU/Linux and macOS are supported.
 
 Usage:
-    update_jre [ [-h] | [-a] [-d] [-f] [-k] [-s source] [-t type] [path] ]
+    update_jdk [ [-h] | [-a] [-d] [-f] [-k] [-s source] [-t type] [path] ]
 
 Options:
     -a      accept license. That is a required option if you want to
@@ -117,21 +117,21 @@ Parameters:
             If omitted, .<type>/ will be used.
 
 Examples:
-    ./update_jre -a
+    ./update_jdk -a
             updates the JRE in ./jre/ and it creates a symlink called
             jre_latest there.
-    ./update_jre -az myjres
+    ./update_jdk -az myjres
             updates the JRE in myjres and it updates the symlink called
             jre_latest there. Additionally the latest timezone updater
             is being downloaded and called so that the JRE's timezone database
             also gets updated.
-    ./update_jre -a -t jdk /opt/java/
+    ./update_jdk -a -t jdk /opt/java/
             updates the JDK in /opt/java/ and it updates a symlink
             called jdk_latest there.
-    ./update_jre -a -t tzupdater /opt/java/
+    ./update_jdk -a -t tzupdater /opt/java/
             updates the tzupdater in /opt/java/ and it updates a symlink
             called tzupdater.jar there.
-    ./update_jre -az -s an -t openjdk10
+    ./update_jdk -az -s an -t openjdk10
             downloads both the latest tzupdater from oracle.com and
             the latest OpenJDK10 build from adoptopenjdk.net, applies the
             latest timezone database from IANA to the OpenJDK by calling
