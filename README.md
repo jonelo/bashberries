@@ -23,7 +23,7 @@ bigfiles            | Determines the biggest files in a directory and it's subdi
 latlng              | Determines both latitude and longitude of a location                           |
 lines               | Extracts a block of lines from a textfile                                      |
 pwned               | Has your password been pwned?                                                  |
-update_jre          | Downloads the latests JRE from the web, extracts it and creates a symlink      |
+update_jdk          | Downloads the latest JDK from the web, extracts it and creates a symlink       |
 update_property     | Updates the value of a key/value pair in a property file                       |
 update_bashberries  | Downloads all bash scripts from the bashberries project on github              |
 update_tzdatabase   | Updates the time zone database of your Java Runtime Environment                |
@@ -152,22 +152,22 @@ Examples:
                that last ending line
 ```
 
-### update_jre
+### update_jdk
 ```
-update_jre v1.7.0, Copyright 2018 Johann N. Loefflmann
+update_jdk v1.12.0, Copyright 2018 Johann N. Loefflmann
 
 Downloads the latest x64 JRE/JDK tarball resp. the latest tzupdater zip from
 the web, extracts it and creates/updates a symlink called <type>_latest
 resp. tzupdater.jar. Supports multiple sources, such as oracle.com, java.com,
-jdk.java.net, and adoptopenjdk.net. The latest timezone database can be applied
-to the requested JRE/JDK as well so that you have the most possible up to date
-JRE/JDK within a Java family from your preferred source. And since the symlink
-always points to the latest JRE/JDK you can update the JRE/JDK both fast and
-comfortable. The OS flavor of the JRE/JDK is determined by the OS that you are
-running. Linux and macOS are supported.
+jdk.java.net, adoptopenjdk.net, and zulu.org. The latest timezone database can
+be applied to the requested JRE/JDK as well so that you have the most possible
+up to date JRE/JDK within a Java family from your preferred source. And since
+the symlink always points to the latest JRE/JDK you can update the JRE/JDK
+both fast and comfortable. The OS flavor of the JRE/JDK is determined by the
+OS that you are running. Both GNU/Linux and macOS are supported.
 
 Usage:
-    update_jre [ [-h] | [-a] [-d] [-f] [-k] [-s source] [-t type] [path] ]
+    update_jdk [ [-h] | [-a] [-d] [-f] [-k] [-s source] [-t type] [path] ]
 
 Options:
     -a      accept license. That is a required option if you want to
@@ -191,33 +191,40 @@ Options:
     -k      keep the downloaded .tar.gz resp. .zip, don't remove it at the end.
 
     -s      source. Supported values are
-                oracle.com        (Oracle binaries, default)
-                java.com          (Oracle binaries)
-                jdk.java.net      (OpenJDK binaries)
-                adoptopenjdk.net  (OpenJDK binaries)
+                oc or oracle.com       (Oracle binaries, default)
+                jc or java.com         (Oracle binaries)
+                jn or jdk.java.net     (OpenJDK binaries)
+                an or adoptopenjdk.net (OpenJDK binaries)
+                zo or zulu.org         (OpenJDK binaries)
 
     -t      type. Valid value depends on the source.
 
             For -s oracle.com it can be
-                jre               (latest JRE)
-                sjre              (latest Server JRE)
-                jdk               (latest JDK)
-                tzupdater         (latest tzupdater)
+                jdk                    (latest JDK)
+                jre                    (latest JRE)
+                sjre                   (latest Server JRE)
+                tzupdater              (latest tzupdater)
 
             For -s java.com it can be
-                 jre              (latest JRE)
+                 jre                   (latest JRE)
 
             For -s jdk.java.net this can be
-                openjdk10         (OpenJDK 10)
-                openjdk11         (OpenJDK 11)
+                openjdk12              (OpenJDK 12)
+                openjdk11              (OpenJDK 11)
+                openjdk10              (OpenJDK 10)
 
             For -s adoptopenjdk.net it can be
-                openjdk8          (OpenJDK 8 with Hotspot)
-                openjdk8-openj9   (OpenJDK 8 with OpenJ9)
-                openjdk9          (OpenJDK 8 with Hotspot)
-                openjdk9-openj9   (OpenJDK 8 with OpenJ9)
-                openjdk10         (OpenJDK 10 with Hotspot)
-                openjdk10-openj9  (OpenJDK 10 with OpenJ9)
+                openjdk10              (OpenJDK 10 with Hotspot)
+                openjdk10-openj9       (OpenJDK 10 with OpenJ9)
+                openjdk9               (OpenJDK 8 with Hotspot)
+                openjdk9-openj9        (OpenJDK 8 with OpenJ9)
+                openjdk8               (OpenJDK 8 with Hotspot)
+                openjdk8-openj9        (OpenJDK 8 with OpenJ9)
+
+            For -s zulu.org it can be
+                jdk10
+                jdk9
+                jdk8
 
     -v      version. Prints out the version of this script.
 
@@ -231,21 +238,21 @@ Parameters:
             If omitted, .<type>/ will be used.
 
 Examples:
-    ./update_jre -a
+    ./update_jdk -a
             updates the JRE in ./jre/ and it creates a symlink called
             jre_latest there.
-    ./update_jre -az myjres
+    ./update_jdk -az myjres
             updates the JRE in myjres and it updates the symlink called
             jre_latest there. Additionally the latest timezone updater
             is being downloaded and called so that the JRE's timezone database
             also gets updated.
-    ./update_jre -a -t jdk /opt/java/
+    ./update_jdk -a -t jdk /opt/java/
             updates the JDK in /opt/java/ and it updates a symlink
             called jdk_latest there.
-    ./update_jre -a -t tzupdater /opt/java/
+    ./update_jdk -a -t tzupdater /opt/java/
             updates the tzupdater in /opt/java/ and it updates a symlink
             called tzupdater.jar there.
-    ./update_jre -az -s adoptopenjdk.net -t openjdk10
+    ./update_jdk -az -s an -t openjdk10
             downloads both the latest tzupdater from oracle.com and
             the latest OpenJDK10 build from adoptopenjdk.net, applies the
             latest timezone database from IANA to the OpenJDK by calling
