@@ -517,12 +517,15 @@ function main() {
                "${TARGET_DIR}/${TYPE}_latest/bin/java" -Djava.vendor="Oracle Corporation" -jar "${TARGET_DIR}/tzupdater.jar" -v -l
            fi
 
-          printf "\nNew binaries have been stored to folder %s\n" "${TARGET_DIR}/${LATEST}"
-          printf "Symlink has been created as %s\n" "${TARGET_DIR}/${SYMLINK}"
-          EXECUTABLE="${TARGET_DIR}/${SYMLINK}/bin/java"
-          # specifying a 10 MB max heap in order to avoid too big heap values on large systems due to Java's ergonomics
-          printf "\nExecuting \"%s -Xmx10m -version\" ...\n" "${EXECUTABLE}"
-          "${TARGET_DIR}/${SYMLINK}/bin/java" -Xmx10m -version
+           if [ "$TYPE" != "tzupdater" ]; then
+               printf "\nNew binaries have been stored to folder %s\n" "${TARGET_DIR}/${LATEST}"
+               printf "Symlink has been created as %s\n" "${TARGET_DIR}/${SYMLINK}"
+
+               EXECUTABLE="${TARGET_DIR}/${SYMLINK}/bin/java"
+               # specifying a 10 MB max heap in order to avoid too big heap values on large systems due to Java's ergonomics
+               printf "\nExecuting \"%s -Xmx10m -version\" ...\n" "${EXECUTABLE}"
+               "${TARGET_DIR}/${SYMLINK}/bin/java" -Xmx10m -version
+           fi
        else
            printf "FATAL: Download failed.\n"
            exit 1
