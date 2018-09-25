@@ -274,10 +274,6 @@ function main() {
             printf "ERROR: type %s (server JRE) is not supported on macOS by %s.\n" "$TYPE" "$SOURCE"
             exit 1
         fi
-        if [ "$OS_TAG" = "osx" ] && [ "$TYPE" = "jdk" ]; then
-            printf "ERROR: type %s (a JDK .tar.gz) is not supported on macOS by %s.\n" "$TYPE" "$SOURCE"
-            exit 1
-        fi
     fi
 
     if [ "$SOURCE" = "an" ] || [ "$SOURCE" = "adoptopenjdk.net" ]; then
