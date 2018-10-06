@@ -20,6 +20,7 @@ bash <(curl -Ls http://bit.ly/update-bashberries) ~/bin
 Script name         | Description                                                                    |
 ------------------- | ------------------------------------------------------------------------------ |
 bigfiles            | Determines the biggest files in a directory and it's subdirectories            |
+deepgrep            | Finds text in files recursively                                                |
 latlng              | Determines both latitude and longitude of a location                           |
 lines               | Extracts a block of lines from a textfile                                      |
 pwned               | Has your password been pwned?                                                  |
@@ -77,6 +78,32 @@ Examples:
     bigfiles -o -n 25 -g 1G /
                  25 biggest files > 1 GB in the root directory and below
                  including a summary of the owners of those files.
+```
+
+### deepgrep
+```
+deepgrep v1.0.0, Copyright 2018 Johann N. Loefflmann
+
+Finds text in files recursively.
+
+Usage:
+    deepgrep [-f file filter] [path] <text>
+
+Options:
+    -f     file filter
+
+Parameters:
+    path   where to search; optional
+    text   what to search
+
+Examples:
+    deepgrep -f *.mine "Gold"
+           searches for "Gold" in all .mine files
+           in the current folder and all subfolders
+
+    deepgrep -f *.mine /big/mountain "Gold"
+           searches for "Gold" in all *.mine files
+           in the /big/mountain folder and all subfolders
 ```
 
 ### latlng

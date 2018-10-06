@@ -1,0 +1,92 @@
+#!/usr/bin/env bash
+
+# deepgrep
+SCRIPT_VERSION=1.1.0
+# grep, but deep
+#
+# It is part of the bashberries project
+# see also https://github.com/jonelo/bashberries
+#
+# Copyright 2018 Johann N. Loefflmann
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+PATH=/bin:/usr/bin:/usr/sbin
+usage() {
+cat << END
+deepgrep v${SCRIPT_VERSION}, Copyright 2018 Johann N. Loefflmann
+
+Finds text in files recursively.
+
+Usage:
+    deepgrep [-f file filter] [path] <text>
+
+Options:
+    -f     file filter
+
+Parameters:
+    path   where to search; optional
+    text   what to search
+
+Examples:
+    deepgrep -f *.mine "Gold"
+           searches for "Gold" in all .mine files
+           in the current folder and all subfolders
+
+    deepgrep -f *.mine /big/mountain "Gold"
+           searches for "Gold" in all *.mine files
+           in the /big/mountain folder and all subfolders
+END
+exit 1
+}
+
+main() {
+
+    FILEFILTER="*"
+    while getopts 'f:' OPTION
+    do
+        case $OPTION in
+        f) FILEFILTER="$OPTARG"
+           ;;
+        ?) usage
+           ;;
+        esac
+    done
+    shift $(($OPTIND -1))
+ 
+    case $# in
+        1) PFAD="."
+           TEXT="$1"
+           ;;
+        2) PFAD="$1"
+           TEXT="$2"
+           ;;
+        *) usage
+           ;;
+    esac
+
+    # input validation
+
+    # minor adjustment for macOS
+    PFADX="${PFAD}/."
+
+    # input validation for the direcotry
+    if [ ! -d "${PFADX}" ]; then
+        printf "Error: %s is not a directory. Exit.\n" "${PFAD}"
+        exit 1
+    fi
+
+    find "$PFAD" -type f -name "$FILEFILTER" -exec grep "$TEXT" {} /dev/null \;
+}
+
+main "$@"
