@@ -241,6 +241,8 @@ Options:
                 openjdk10              (OpenJDK 10)
 
             For -s adoptopenjdk.net it can be
+                openjdk11              (OpenJDK 11 with Hotspot)
+                openjdk11-openj9       (OpenJDK 11 with OpenJ9)
                 openjdk10              (OpenJDK 10 with Hotspot)
                 openjdk10-openj9       (OpenJDK 10 with OpenJ9)
                 openjdk9               (OpenJDK 8 with Hotspot)

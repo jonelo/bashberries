@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #
 # update_jdk
-SCRIPT_VERSION=1.12.0
+SCRIPT_VERSION=1.13.0
 #
 # Downloads the latest x64 JRE/JDK tarball resp. the latest tzupdater zip
 # from the web, extracts it and creates/updates a symlink called <type>_latest
@@ -93,6 +93,8 @@ Options:
                 openjdk10              (OpenJDK 10)
 
             For -s adoptopenjdk.net it can be
+                openjdk11              (OpenJDK 11 with Hotspot)
+                openjdk11-openj9       (OpenJDK 11 with OpenJ9)
                 openjdk10              (OpenJDK 10 with Hotspot)
                 openjdk10-openj9       (OpenJDK 10 with OpenJ9)
                 openjdk9               (OpenJDK 8 with Hotspot)
@@ -131,12 +133,12 @@ Examples:
     ./update_jdk -a -t tzupdater /opt/java/
             updates the tzupdater in /opt/java/ and it updates a symlink
             called tzupdater.jar there.
-    ./update_jdk -az -s an -t openjdk10
+    ./update_jdk -az -s an -t openjdk11
             downloads both the latest tzupdater from oracle.com and
-            the latest OpenJDK10 build from adoptopenjdk.net, applies the
+            the latest OpenJDK11 build from adoptopenjdk.net, applies the
             latest timezone database from IANA to the OpenJDK by calling
-            the tzupdater tool. Symlink called .openjdk10/openjdk10_latest
-            will point to the latest and updated OpenJDK10 build.
+            the tzupdater tool. Symlink called .openjdk11/openjdk11_latest
+            will point to the latest and updated OpenJDK11 build.
 END
 exit 0
 }
@@ -261,22 +263,22 @@ function main() {
 
     SUFFIX=".tar.gz"
     # option combination check
-    if [ "$SOURCE" = "oc" ] || [ "$SOURCE" = "oracle.com" ] || [ $ZOPTION -eq 1 ]; then
+    if [ "$SOURCE" = "oc" -o "$SOURCE" = "oracle.com" -o $ZOPTION -eq 1 ]; then
         licenseAcceptedRequired $ACCEPT
     fi
 
-    if [ "$SOURCE" = "oc" ] || [ "$SOURCE" = "oracle.com" ]; then
-	    if [ "$TYPE" != "jre" ] && [ "$TYPE" != "sjre" ] && [ "$TYPE" != "jdk" ] && [ "$TYPE" != "tzupdater" ]; then
+    if [ "$SOURCE" = "oc" -o "$SOURCE" = "oracle.com" ]; then
+	    if [ "$TYPE" != "jre" -a "$TYPE" != "sjre" -a "$TYPE" != "jdk" -a "$TYPE" != "tzupdater" ]; then
             printf "ERROR: type %s is not supported by %s.\n" "$TYPE" "$SOURCE"
             exit 1
         fi
-        if [ "$OS_TAG" = "osx" ] && [ "$TYPE" = "sjre" ]; then
+        if [ "$OS_TAG" = "osx" -a "$TYPE" = "sjre" ]; then
             printf "ERROR: type %s (server JRE) is not supported on macOS by %s.\n" "$TYPE" "$SOURCE"
             exit 1
         fi
     fi
 
-    if [ "$SOURCE" = "an" ] || [ "$SOURCE" = "adoptopenjdk.net" ]; then
+    if [ "$SOURCE" = "an" -o "$SOURCE" = "adoptopenjdk.net" ]; then
         # OS identifiers for the files are different on adoptopenjdk.net
         if [ "$OS_TAG" = "osx" ]; then
             OS_TAG="Mac"
@@ -286,38 +288,42 @@ function main() {
             OS_TAG="Linux"
             OS_REGEX_TAG='[Ll]inux'
         fi
-	    if [ "$TYPE" != "openjdk10" ] && [ "$TYPE" != "openjdk10-openj9" ] && \
-	       [ "$TYPE" != "openjdk9" ] && [ "$TYPE" != "openjdk9-openj9" ] && \
-	       [ "$TYPE" != "openjdk8" ] && [ "$TYPE" != "openjdk8-openj9" ]; then
+	    if [ "$TYPE" != "openjdk11" -a "$TYPE" != "openjdk11-openj9" -a \
+	         "$TYPE" != "openjdk10" -a "$TYPE" != "openjdk10-openj9" -a \
+	         "$TYPE" != "openjdk9" -a "$TYPE" != "openjdk9-openj9" -a \
+	         "$TYPE" != "openjdk8" -a "$TYPE" != "openjdk8-openj9" ]; then
             printf "ERROR: type %s is not supported by %s.\n" "$TYPE" "$SOURCE"
             exit 1
         fi
         # there is no openj9 on Mac
         if [ "$OS_TAG" = "Mac" ]; then
-            if [ "$TYPE" = "openjdk8-openj9" ] || [ "$TYPE" = "openjdk9-openj9" ] || [ "$TYPE" = "openjdk10-openj9" ]; then
+            if [ "$TYPE" = "openjdk11-openj9" -o \
+                 "$TYPE" = "openjdk10-openj9" -o \
+                 "$TYPE" = "openjdk9-openj9" -o \
+                 "$TYPE" = "openjdk8-openj9" ]; then
                 printf "ERROR: type %s (a JDK .tar.gz) is not supported on macOS by %s.\n" "$TYPE" "$SOURCE"
                 exit 1
             fi
         fi
     fi
 
-    if [ "$SOURCE" = "zo" ] || [ "$SOURCE" = "zulu.org" ]; then
+    if [ "$SOURCE" = "zo" -o "$SOURCE" = "zulu.org" ]; then
         if [ "$OS_TAG" = "osx" ]; then
             OS_TAG="macosx"
-            if [ "$TYPE" = "jdk10" ] || [ "$TYPE" = "jdk8" ]; then
+            if [ "$TYPE" = "jdk11" -o "$TYPE" = "jdk10" -o "$TYPE" = "jdk8" ]; then
                 SUFFIX=".zip"
             fi
         fi
     fi
 
-    if [ "$SOURCE" = "jn" ] || [ "$SOURCE" = "jdk.java.net" ]; then
-        if [ "$TYPE" != "openjdk12" ] && [ "$TYPE" != "openjdk11" ] && [ "$TYPE" != "openjdk10" ]; then
+    if [ "$SOURCE" = "jn" -o "$SOURCE" = "jdk.java.net" ]; then
+        if [ "$TYPE" != "openjdk12" -a "$TYPE" != "openjdk11" -a "$TYPE" != "openjdk10" ]; then
             printf "ERROR: type %s is not supported by %s.\n" "$TYPE" "$SOURCE"
             exit 1
         fi
     fi
 
-    if [ "$SOURCE" = "jc" ] || [ "$SOURCE" = "java.com" ]; then
+    if [ "$SOURCE" = "jc" -o "$SOURCE" = "java.com" ]; then
         if [ "$TYPE" != "jre" ]; then
             printf "ERROR: type %s is not supported by %s.\n" "$TYPE" "$SOURCE"
             exit 1
@@ -342,7 +348,7 @@ function main() {
     esac
 
     # any jre, sjre, jdk, etc. with -z option is wanted
-    if [ "$TYPE" != "tzupdater" ] && [ $ZOPTION -eq 1 ]; then
+    if [ "$TYPE" != "tzupdater" -a $ZOPTION -eq 1 ]; then
         # get the tzupdater
         "${SCRIPT_DIR}/${SCRIPT_NAME}" -a -t tzupdater "$TARGET_DIR"
     fi
@@ -358,7 +364,7 @@ function main() {
 
     printf "INFO: Checking for %s on %s ...\n" $TYPE $SOURCE
 
-    if [ $SOURCE = "oc" ] || [ $SOURCE = "oracle.com" ]; then
+    if [ $SOURCE = "oc" -o $SOURCE = "oracle.com" ]; then
         if [ $TYPE = "tzupdater" ]; then
             DOWNLOAD_ADDRESS="http://www.oracle.com/technetwork/java/javase/downloads/tzupdater-download-513681.html"
             downloadWebsite "$DOWNLOAD_ADDRESS" "$TEMP_FILE"
@@ -384,8 +390,8 @@ function main() {
             parseFile "$TEMP_FILE" $REGEX
         fi
 
-    elif [ $SOURCE = "an" ] || [ $SOURCE = "adoptopenjdk.net" ]; then
-            if [ ${TYPE} = "openjdk9" ]; then
+    elif [ $SOURCE = "an" -o $SOURCE = "adoptopenjdk.net" ]; then
+            if [ "${TYPE}" = "openjdk9" -o "${TYPE}" = "openjdk11" ]; then
                 DOWNLOAD_ADDRESS="https://github.com/AdoptOpenJDK/${TYPE}-binaries/releases/latest"
             else
                 DOWNLOAD_ADDRESS="https://github.com/AdoptOpenJDK/${TYPE}-releases/releases/latest"
@@ -393,18 +399,20 @@ function main() {
             downloadWebsite "$DOWNLOAD_ADDRESS" "$TEMP_FILE"
             REGEX='tag/([^"]+)'
             parseFile "$TEMP_FILE" $REGEX
-            # openjdk9 filenames have a different pattern than openjdk8 and openjdk10
-            if [ ${TYPE} = "openjdk9" ]; then
+            # pattern for openjdk9 and openjdk11
+            if [ ${TYPE} = "openjdk9" -o ${TYPE} = "openjdk11" ]; then
+                #      https://github.com/AdoptOpenJDK/openjdk11-binaries/releases/download/jdk-11%2B28/OpenJDK11-jdk_x64_mac_hotspot_11_28.tar.gz
                 # e.g. https://github.com/AdoptOpenJDK/openjdk9-binaries/releases/download/jdk-9.0.4%2B11/OpenJDK9U_x64_mac_hotspot_2018-08-08-15-47.tar.gz
                 REGEX='href=\"(/AdoptOpenJDK/'${TYPE}'-binaries/releases/download/'${FOUND_ADDRESS}'/[^_]+_x64_'${OS_REGEX_TAG}'_[^\.]+\.tar\.gz)\"'
             else
+            # pattern for openjdk8 and openjdk10
                 # e. g. <a href="/AdoptOpenJDK/openjdk10-releases/releases/download/jdk-10.0.2%2B13/OpenJDK10_x64_Linux_jdk-10.0.2.13.tar.gz" rel="nofollow" class="d-flex flex-items-center">
                 REGEX='href=\"(/AdoptOpenJDK/'${TYPE}'-releases/releases/download/'${FOUND_ADDRESS}'/[^_]+_x64_'${OS_TAG}'_'${FOUND_ADDRESS/\%2B/.}'\.tar\.gz)\"'
             fi
             parseFile "$TEMP_FILE" $REGEX
             FOUND_ADDRESS="https://github.com${FOUND_ADDRESS}"
 
-    elif [ $SOURCE = "jn" ] || [ $SOURCE = "jdk.java.net" ]; then
+    elif [ $SOURCE = "jn" -o $SOURCE = "jdk.java.net" ]; then
             JDKVERSION=${TYPE:7} # remove the openjdk string
             DOWNLOAD_ADDRESS="http://jdk.java.net/${JDKVERSION}/"
             downloadWebsite "$DOWNLOAD_ADDRESS" "$TEMP_FILE"
@@ -415,7 +423,7 @@ function main() {
             REGEX='href=\"(https://download.java.net/([^/]+/){2}[^_]+_'${OS_TAG}'-x64_bin\.tar\.gz)\">'
             parseFile "$TEMP_FILE" $REGEX
 
-    elif [ $SOURCE = "jc" ] || [ $SOURCE = "java.com" ]; then
+    elif [ $SOURCE = "jc" -o $SOURCE = "java.com" ]; then
             DOWNLOAD_ADDRESS="https://www.java.com/en/download/manual.jsp"
             # e.g. <a title="Download Java software for Linux x64" href="http://javadl.oracle.com/webapps/download/AutoDL?BundleId=233162_512cd62ec5174c3487ac17c61aaa89e8" ...>
             # Linux x64</a>
@@ -424,7 +432,7 @@ function main() {
             REGEX='(http[s]?://javadl.oracle.com/webapps/download/AutoDL\?BundleId=[^"]+)"[^>]*>[[:space:]]*'${IDENTIFIER}'</a>'
             parseFile "$TEMP_FILE" $REGEX
 
-    elif [ $SOURCE = "zo" ] || [ $SOURCE = "zulu.org" ]; then
+    elif [ $SOURCE = "zo" -o $SOURCE = "zulu.org" ]; then
             DOWNLOAD_ADDRESS="https://zulu.org/download/"
             downloadWebsite "$DOWNLOAD_ADDRESS" "$TEMP_FILE"
             REGEX='(https://cdn.azul.com/zulu/bin/[^\-]+-'${TYPE}'[^\-]*-'${OS_TAG}'_x64'${SUFFIX}')'
@@ -444,7 +452,7 @@ function main() {
     fi
     WEHAVE=$(<"${VERSION_FILE}")
 
-    if [ "$DOWNLOAD_ADDRESS" != "$WEHAVE" ] || [ $FORCE -eq 1 ]; then
+    if [ "$DOWNLOAD_ADDRESS" != "$WEHAVE" -o $FORCE -eq 1 ]; then
        if [ $DRYRUN -eq 1 ]; then
            printf "INFO: DRY RUN: Would download %s and would save it to %s.\n" "$DOWNLOAD_ADDRESS" "$ARCHIVE_FILE"
            exit 0
@@ -453,7 +461,7 @@ function main() {
        if [ -f "${ARCHIVE_FILE}" ]; then
            rm "${ARCHIVE_FILE}"
        fi
-       if [ "$SOURCE" = "oc" ] || [ "$SOURCE" = "oracle.com" ]; then
+       if [ "$SOURCE" = "oc" -o "$SOURCE" = "oracle.com" ]; then
            curl -Lo "${ARCHIVE_FILE}" -j -k -L -H "Cookie: oraclelicense=accept-securebackup-cookie" "$DOWNLOAD_ADDRESS"
        else
            curl -Lo "${ARCHIVE_FILE}" "$DOWNLOAD_ADDRESS"
@@ -510,7 +518,7 @@ function main() {
            fi
 
            # any jre, sjre or jdk, etc. with -z option is wanted
-           if [ "$TYPE" != "tzupdater" ] && [ $ZOPTION -eq 1 ]; then
+           if [ "$TYPE" != "tzupdater" -a $ZOPTION -eq 1 ]; then
                # call the tzupdater by using the java binary from the JRE/JDK that we have just downloaded
                # specify the expected property as I described in Jan 2007:
                # https://lists.apple.com/archives/Java-dev/2007/Jan/msg00060.html
@@ -542,7 +550,7 @@ function main() {
        ls -la "${TARGET_DIR}/${SYMLINK}"
 
        # any jre, sjre or jdk, etc. with -z option is wanted
-       if [ "$TYPE" != "tzupdater" ] && [ $ZOPTION -eq 1 ]; then
+       if [ "$TYPE" != "tzupdater" -a $ZOPTION -eq 1 ]; then
            # call the tzupdater by using the java binary from the JRE/JDK that we downloaded in the past
            "${TARGET_DIR}/${TYPE}_latest/bin/java" -Djava.vendor="Oracle Corporation" -jar "${TARGET_DIR}/tzupdater.jar" -v -l
        fi
