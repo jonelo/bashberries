@@ -310,7 +310,7 @@ function main() {
     if [ "$SOURCE" = "zo" -o "$SOURCE" = "zulu.org" ]; then
         if [ "$OS_TAG" = "osx" ]; then
             OS_TAG="macosx"
-            if [ "$TYPE" = "jdk11" -o "$TYPE" = "jdk10" -o "$TYPE" = "jdk8" ]; then
+            if [ "$TYPE" = "jdk10" -o "$TYPE" = "jdk8" ]; then
                 SUFFIX=".zip"
             fi
         fi
