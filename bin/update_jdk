@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #
 # update_jdk
-SCRIPT_VERSION=1.13.0
+SCRIPT_VERSION=1.14.0
 #
 # Downloads the latest x64 JRE/JDK tarball resp. the latest tzupdater zip
 # from the web, extracts it and creates/updates a symlink called <type>_latest
@@ -401,9 +401,10 @@ function main() {
             parseFile "$TEMP_FILE" $REGEX
             # pattern for openjdk9 and openjdk11
             if [ ${TYPE} = "openjdk9" -o ${TYPE} = "openjdk11" ]; then
+                #      https://github.com/AdoptOpenJDK/openjdk11-binaries/releases/download/jdk-11.0.1%2B13/OpenJDK11U-jdk_x64_mac_hotspot_11.0.1_13.tar.gz
                 #      https://github.com/AdoptOpenJDK/openjdk11-binaries/releases/download/jdk-11%2B28/OpenJDK11-jdk_x64_mac_hotspot_11_28.tar.gz
                 # e.g. https://github.com/AdoptOpenJDK/openjdk9-binaries/releases/download/jdk-9.0.4%2B11/OpenJDK9U_x64_mac_hotspot_2018-08-08-15-47.tar.gz
-                REGEX='href=\"(/AdoptOpenJDK/'${TYPE}'-binaries/releases/download/'${FOUND_ADDRESS}'/[^_]+_x64_'${OS_REGEX_TAG}'_[^\.]+\.tar\.gz)\"'
+                REGEX='href=\"(/AdoptOpenJDK/'${TYPE}'-binaries/releases/download/'${FOUND_ADDRESS}'/[^_]+_x64_'${OS_REGEX_TAG}'_hotspot_[\.0-9_]+\.tar\.gz)\"'
             else
             # pattern for openjdk8 and openjdk10
                 # e. g. <a href="/AdoptOpenJDK/openjdk10-releases/releases/download/jdk-10.0.2%2B13/OpenJDK10_x64_Linux_jdk-10.0.2.13.tar.gz" rel="nofollow" class="d-flex flex-items-center">
