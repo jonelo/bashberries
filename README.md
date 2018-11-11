@@ -181,7 +181,7 @@ Examples:
 
 ### update_jdk
 ```
-update_jdk v1.14.0, Copyright 2018 Johann N. Loefflmann
+update_jdk v1.15.0, Copyright 2018 Johann N. Loefflmann
 
 Downloads the latest x64 JRE/JDK tarball resp. the latest tzupdater zip from
 the web, extracts it and creates/updates a symlink called <type>_latest
