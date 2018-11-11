@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #
 # update_jdk
-SCRIPT_VERSION=1.14.0
+SCRIPT_VERSION=1.15.0
 #
 # Downloads the latest x64 JRE/JDK tarball resp. the latest tzupdater zip
 # from the web, extracts it and creates/updates a symlink called <type>_latest
@@ -74,7 +74,7 @@ Options:
                 jc or java.com         (Oracle binaries)
                 jn or jdk.java.net     (OpenJDK binaries)
                 an or adoptopenjdk.net (OpenJDK binaries)
-                zo or zulu.org         (OpenJDK binaries)
+                ac or azul.com         (OpenJDK binaries)
 
     -t      type. Valid value depends on the source.
 
@@ -102,7 +102,7 @@ Options:
                 openjdk8               (OpenJDK 8 with Hotspot)
                 openjdk8-openj9        (OpenJDK 8 with OpenJ9)
 
-            For -s zulu.org it can be
+            For -s azul.com it can be
                 jdk10
                 jdk9
                 jdk8
@@ -307,12 +307,9 @@ function main() {
         fi
     fi
 
-    if [ "$SOURCE" = "zo" -o "$SOURCE" = "zulu.org" ]; then
+    if [ "$SOURCE" = "ac" -o "$SOURCE" = "azul.com" ]; then
         if [ "$OS_TAG" = "osx" ]; then
-            OS_TAG="macosx"
-            if [ "$TYPE" = "jdk10" -o "$TYPE" = "jdk8" ]; then
-                SUFFIX=".zip"
-            fi
+            OS_TAG="mac"
         fi
     fi
 
@@ -433,10 +430,11 @@ function main() {
             REGEX='(http[s]?://javadl.oracle.com/webapps/download/AutoDL\?BundleId=[^"]+)"[^>]*>[[:space:]]*'${IDENTIFIER}'</a>'
             parseFile "$TEMP_FILE" $REGEX
 
-    elif [ $SOURCE = "zo" -o $SOURCE = "zulu.org" ]; then
-            DOWNLOAD_ADDRESS="https://zulu.org/download/"
+    elif [ $SOURCE = "ac" -o $SOURCE = "azul.com" ]; then
+            DOWNLOAD_ADDRESS="https://www.azul.com/downloads/zulu/zulu-${OS_TAG}"
             downloadWebsite "$DOWNLOAD_ADDRESS" "$TEMP_FILE"
-            REGEX='(https://cdn.azul.com/zulu/bin/[^\-]+-'${TYPE}'[^\-]*-'${OS_TAG}'_x64'${SUFFIX}')'
+            # e.g. https://cdn.azul.com/zulu/bin/zulu11.2.3-jdk11.0.1-macosx_x64.tar.gz
+            REGEX='(https://cdn.azul.com/zulu/bin/[^\-]+-'${TYPE}'[^\-]*-'${OS_TAG}'[^_]+_x64.tar.gz)'
             parseFile "$TEMP_FILE" $REGEX
     fi
 
