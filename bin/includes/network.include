@@ -90,7 +90,7 @@ function openBrowser() {
               # we just can call iexplore.exe,
               # see also https://msdn.microsoft.com/en-us/commandline/wsl/interop
               if [[ "(uname -p)" == "x86_64" ]]; then
-                  /mnt/c/Program\ Files/Internet\ Explorer/iexplore.exe "$URL" 2> /dev/null
+                  /mnt/c/Program\ Files/internet\ explorer/iexplore.exe "$URL" 2> /dev/null
               else
                   /mnt/c/Program\ Files\ \(x86\)/Internet\ Explorer/iexplore.exe "$URL" 2> /dev/null
               fi
