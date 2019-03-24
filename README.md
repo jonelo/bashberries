@@ -251,6 +251,7 @@ Options:
                 openjdk8-openj9        (OpenJDK 8 with OpenJ9)
 
             For -s zulu.org it can be
+                jdk11
                 jdk10
                 jdk9
                 jdk8
