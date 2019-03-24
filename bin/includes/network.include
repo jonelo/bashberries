@@ -10,7 +10,7 @@
 # is stored and source this file by calling
 #
 # SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-# . "${SCRIPT_DIR}/version.include"
+# . "${SCRIPT_DIR}/network.include"
 #
 #
 # Copyright 2017 Johann N. Loefflmann

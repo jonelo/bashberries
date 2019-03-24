@@ -15,6 +15,11 @@ https://jonelo.github.io/bashberries/
 bash <(curl -Ls https://bit.ly/update-bashberries) ~/bin
 ```
 
+## Install or update troubleshooting
+
+Make sure that you have the unzip utility installed and that you can connect to the internet, double check proxy
+settings if applicable.
+
 ## Overview of the bash berries
 
 Script name         | Description                                                                    |
