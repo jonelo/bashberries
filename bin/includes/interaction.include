@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #
-# interaction.include is an include file for bash scripts
-# provides functions for an user interaction
+# interaction.include is an include file for bash scripts.
+# It provides functions for an user interaction.
 #
 # It is part of the bashberries project,
 # see also https://github.com/jonelo/bashberries
@@ -13,7 +13,7 @@
 # . "${SCRIPT_DIR}/interaction.include"
 #
 #
-# Copyright 2017 Johann N. Loefflmann
+# Copyright 2017-2019 Johann N. Loefflmann
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.

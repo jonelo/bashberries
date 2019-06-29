@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #
-# math.include is an include file for bash scripts
-# it provides mathematical functions
+# math.include is an include file for bash scripts.
+# It provides mathematical functions.
 #
 # It is part of the bashberries project,
 # see also https://github.com/jonelo/bashberries
@@ -13,7 +13,7 @@
 # . "${SCRIPT_DIR}/math.include"
 #
 #
-# Copyright 2017 Johann N. Loefflmann
+# Copyright 2017-2019 Johann N. Loefflmann
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
