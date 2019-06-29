@@ -11,7 +11,7 @@
 # It is part of the bashberries project
 # see also https://github.com/jonelo/bashberries
 #
-# Copyright 2018 Johann N. Loefflmann
+# Copyright 2018-2019 Johann N. Loefflmann
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -32,15 +32,15 @@ else
 fi
 SERVER=api.pwnedpasswords.com
 printf "Password to check: "
-read -s PASSWORD
+IFS="" read -r -s PASSWORD
 HASH=$(printf "%s" "$PASSWORD" | ${SHASUM} -)
 HASH=${HASH:0:40}
-printf "\rsha1(password): %s\n" $HASH
-curl -so /tmp/${SERVER}.$$ https://${SERVER}/range/${HASH:0:5}
+printf "\rsha1(password): %s\n" "$HASH"
+curl -so /tmp/${SERVER}.$$ https://${SERVER}/range/"${HASH:0:5}"
 if [ ! -f /tmp/${SERVER}.$$ ]; then
     printf "There seems to be a problem with the connection to %s.\n" $SERVER
 else
-    LINE=$(grep -i ${HASH:5} /tmp/${SERVER}.$$)
+    LINE=$(grep -i "${HASH:5}" /tmp/${SERVER}.$$)
     rm /tmp/${SERVER}.$$
     if [ -n "$LINE" ]; then
        LINE=${LINE//[$'\r\n']}

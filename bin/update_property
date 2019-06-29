@@ -25,7 +25,7 @@ PATH=/bin:/usr/bin:/usr/sbin
 
 usage() {
 cat << END
-update_property v${SCRIPT_VERSION}, Copyright 2017,2018 Johann N. Loefflmann
+update_property v${SCRIPT_VERSION}, Copyright 2017-2019 Johann N. Loefflmann
 
 Updates the value of a key/value pair in a property file.
 The script saves existing comments and also the order of the properties.
@@ -66,13 +66,13 @@ exit 1
 function printUpdatedValueDependentOnFlagQ {
     OLDVALUE="$1"
     ACTUALVALUE="${NEWVALUE}"
-    if [ ${aflag} -eq 1 ]; then
+    if [ "${aflag}" -eq 1 ]; then
         ACTUALVALUE="${OLDVALUE}${NEWVALUE}"
     fi
-    if [ ${pflag} -eq 1 ]; then
+    if [ "${pflag}" -eq 1 ]; then
         ACTUALVALUE="${NEWVALUE}${OLDVALUE}"
     fi
-    if [ ${qflag} -eq 1 ]; then
+    if [ "${qflag}" -eq 1 ]; then
         FORMAT="%s%s\"%s\"\n"
     else
         FORMAT="%s%s%s\n"
@@ -81,7 +81,7 @@ function printUpdatedValueDependentOnFlagQ {
 }
 
 function printUpdatedValueDependentOnFlagE() {
-    if [ ${eflag} -eq 1 ]; then
+    if [ "${eflag}" -eq 1 ]; then
         printUpdatedValueDependentOnFlagQ "$1" | tee -a "${TEMPFILE}"
     else
         printUpdatedValueDependentOnFlagQ "$1" >> "${TEMPFILE}"
@@ -115,7 +115,7 @@ main() {
            ;;
         esac
     done
-    shift $(($OPTIND -1))
+    shift $((OPTIND -1))
 
     # parameters
     case $# in
@@ -128,7 +128,7 @@ main() {
     esac
 
     # input validation
-    if [ ! -f ${FILE} ]; then
+    if [ ! -f "${FILE}" ]; then
         printf "Error: file %s not found. Exit.\n" "${FILE}" >&2
         exit 1;
     fi
@@ -136,7 +136,7 @@ main() {
     TEMPFILE="$1.$$"
     FOUND=0
 
-    while read LINE
+    while read -r LINE
     do
         # LINE starts with key=
         if [[ "${LINE}" =~ ^${KEY}${DELIMITER}(.*)$ ]]; then

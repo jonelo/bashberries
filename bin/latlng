@@ -21,12 +21,14 @@
 # limitations under the License.
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+# shellcheck source=includes/version.include
 . "${SCRIPT_DIR}/includes/version.include"
+# shellcheck source=includes/network.include
 . "${SCRIPT_DIR}/includes/network.include"
 
 usage() {
 cat << END
-latlng v1.0.0, Copyright 2017 Johann N. Loefflmann
+latlng v1.0.0, Copyright 2017-2019 Johann N. Loefflmann
 
 Determines both latitude and longitude of a location.
 The script uses the Google Maps web service.
@@ -65,12 +67,12 @@ main() {
            ;;
         esac
     done
-    shift $(($OPTIND -1))
+    shift $((OPTIND -1))
 
     # parameters
     case $# in
         0) if [ $INTERACTIVE -eq 1 ]; then
-               read LOCATION
+               read -r LOCATION
            else
                usage
            fi
@@ -85,9 +87,9 @@ main() {
     GOOGLEAPI=http://maps.googleapis.com/maps/api/geocode/json
     CURL_VERSION=$(curl -V)
     REGEX='^curl ([\.0-9]+)'
-    if [ ! -z "$CURL_VERSION" ] && [[ "$CURL_VERSION" =~ $REGEX ]]; then
-        CURL_VERSION=$(printf "%s\n" ${BASH_REMATCH[1]})
-        if [ $(normalizedVersion $CURL_VERSION) -ge $(normalizedVersion "7.18.0") ]; then
+    if [ -n "$CURL_VERSION" ] && [[ "$CURL_VERSION" =~ $REGEX ]]; then
+        CURL_VERSION=$(printf "%s\n" "${BASH_REMATCH[1]}")
+        if [ "$(normalizedVersion "$CURL_VERSION")" -ge "$(normalizedVersion "7.18.0")" ]; then
             # requirement: curl 7.18.0 or newer
             DATA=$(curl -G \
                 --data-urlencode "address=${LOCATION}" \
@@ -105,7 +107,7 @@ main() {
     fi
 
     # "geometry" : { "location" : { "lat" : 40.6892494, "lng" : -74.04450039999999 }
-    if [ ! -z "$DATA" ]; then
+    if [ -n "$DATA" ]; then
 
         REGEX='"formatted_address" : "([^"]*)"'
         if [[ "$DATA" =~ $REGEX ]] && [ $CSV -eq 0 ]; then

@@ -24,7 +24,7 @@ SCRIPT_VERSION=1.1.0
 PATH=/bin:/usr/bin:/usr/sbin
 usage() {
 cat << END
-deepgrep v${SCRIPT_VERSION}, Copyright 2018 Johann N. Loefflmann
+deepgrep v${SCRIPT_VERSION}, Copyright 2018-2019 Johann N. Loefflmann
 
 Finds text in files recursively.
 
@@ -62,7 +62,7 @@ main() {
            ;;
         esac
     done
-    shift $(($OPTIND -1))
+    shift $((OPTIND -1))
  
     case $# in
         1) PFAD="."

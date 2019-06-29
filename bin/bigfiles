@@ -22,14 +22,14 @@
 
 PATH=/bin:/usr/bin:/usr/sbin
 LANG=C
-trap 'rm -f $TMP1 $TMP2; exit 2' 1 2 13 15
+trap 'rm -f $TMP1 $TMP2; exit 2' HUP INT TERM
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 . "${SCRIPT_DIR}/includes/interaction.include"
 . "${SCRIPT_DIR}/includes/math.include"
 
 usage() {
 cat << END
-bigfiles v1.1.0, Copyright 2017 Johann N. Loefflmann
+bigfiles v1.1.0, Copyright 2017-2019 Johann N. Loefflmann
 
 Determines the biggest files in a directory and it's subdirectories
 

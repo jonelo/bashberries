@@ -48,7 +48,7 @@ function clearPleaseWaitMsg() {
 # exits on invalid input
 # param $1 an error message
 function exitOnInvalidInput() {
-    if [ -z $1 ] || [[ ! "$1" =~ $2 ]]; then
+    if [ -z "$1" ] || [[ ! "$1" =~ $2 ]]; then
         printf "Error: %s\n" "$3"
         exit 1
     fi
@@ -57,7 +57,7 @@ function exitOnInvalidInput() {
 # prints a warning on invalid input
 # param $1 a warning message
 function warningOnInvalidInput() {
-    if [ -z $1 ] || [[ ! "$1" =~ $2 ]]; then
+    if [ -z "$1" ] || [[ ! "$1" =~ $2 ]]; then
         printf "Warning: %s\n" "$3"
     fi
 } >&2

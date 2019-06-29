@@ -29,7 +29,7 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 
 usage() {
 cat << END
-update_tzdatabase v1.0.2, Copyright 2017-2018 Johann N. Loefflmann
+update_tzdatabase v1.0.2, Copyright 2017-2019 Johann N. Loefflmann
 
 Downloads the latest timezone data from iana.org, calculates the necessary
 sha256 digest by calling jacksum, and updates the timezone database of
@@ -79,7 +79,7 @@ function main() {
            ;;
         esac
     done
-    shift $(($OPTIND -1))
+    shift $((OPTIND -1))
 
     if [ ! -f "${JAVA}" ]; then
         printf "FATAL: binary %s not found, please specify the path to the java binary.\n" "${JAVA}"
@@ -100,7 +100,7 @@ function main() {
     FILE=tzdata-latest.tar.gz
 
     curl -o "$FILE" "https://data.iana.org/time-zones/$FILE"
-    "$JAVA" -jar ${JACKSUM} -a sha512 -F \#CHECKSUM "$FILE" > "$FILE".sha512
+    "$JAVA" -jar "${JACKSUM}" -a sha512 -F \#CHECKSUM "$FILE" > "$FILE".sha512
 
     printf "Updating tzdatabase using %s\n" "$JAVA"
     "$JAVA" -jar "${TZUPDATER}" -V

@@ -24,12 +24,14 @@
 PATH=/bin:/usr/bin:/usr/sbin
 LANG=C
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+# shellcheck source=includes/interaction.include
 . "${SCRIPT_DIR}/includes/interaction.include"
+# shellcheck source=includes/trim.include
 . "${SCRIPT_DIR}/includes/trim.include"
 
 usage() {
 cat << END
-lines v1.0.0, Copyright 2017 Johann N. Loefflmann
+lines v1.0.0, Copyright 2017-2019 Johann N. Loefflmann
 
 Extracts a block of lines from a textfile
 
@@ -81,36 +83,28 @@ exit 1
 main() {
     # options
     iflag=''
-    bflag=0
     bvalue=1
-    eflag=0
     evalue=1
-    Eflag=0
     Evalue=0
-    Bflag=0
     Bvalue=0
     while getopts 'ib:e:H:T:' OPTION
     do
         case $OPTION in
         i) iflag='-i'
            ;;
-        b) bflag=1
-           bvalue="$OPTARG"
+        b) bvalue="$OPTARG"
            exitOnInvalidInput "${bvalue}" '^([[:digit:]]+)$' \
                "Input ${bvalue} is invalid. Not a positive number. Exit."
            ;;
-        e) eflag=1
-           evalue="$OPTARG"
+        e) evalue="$OPTARG"
            exitOnInvalidInput "${evalue}" '^([[:digit:]]+)$' \
                "Input ${evalue} is invalid. Not a positive number. Exit."
            ;;
-        H) Bflag=1
-           Bvalue="$OPTARG"
+        H) Bvalue="$OPTARG"
            exitOnInvalidInput "${Bvalue}" '^\-?([[:digit:]]+)$' \
                "Input ${Bvalue} is invalid. Not an integer. Exit."
            ;;
-        T) Eflag=1
-           Evalue="$OPTARG"
+        T) Evalue="$OPTARG"
            exitOnInvalidInput "${Evalue}" '^\-?([[:digit:]]+)$' \
                "Input ${Evalue} is invalid. Not an integer. Exit."
            ;;
@@ -118,7 +112,7 @@ main() {
            ;;
         esac
     done
-    shift $(($OPTIND -1))
+    shift $((OPTIND -1))
 
     # parameters
     case $# in
@@ -137,8 +131,8 @@ main() {
         *) usage;;
     esac
 
-    if [ ! -f ${FILE} ]; then
-        printf "Error: file %s not found. Exit.\n" ${FILE} >&2
+    if [ ! -f "${FILE}" ]; then
+        printf "Error: file %s not found. Exit.\n" "${FILE}" >&2
         exit 1;
     fi
 
@@ -153,7 +147,7 @@ main() {
         fi
     else
         # BEGIN is a string
-        STARTLINE=$(grep ${iflag} -n "${BEGIN}" ${FILE} | tail +${bvalue})
+        STARTLINE=$(grep ${iflag} -n "${BEGIN}" "${FILE}" | tail +"${bvalue}")
 
         # printf "DEBUG1: Startline: %s\n" $STARTLINE
         if [[ -z ${STARTLINE} ]]; then
@@ -166,16 +160,16 @@ main() {
     fi
 
     # adjust STARTLINE if -B number was set
-    STARTLINE=$(($STARTLINE - $Bvalue))
+    STARTLINE=$((STARTLINE - Bvalue))
     if [ $STARTLINE -le 0 ]; then
        STARTLINE=1
     fi
     # printf "DEBUG2: Startline: %s\n" $STARTLINE
 
     # END has not been set
-    if [ -z ${END} ]; then
-         END=$(wc -l < $FILE)
-         END=$(trim ${END})
+    if [ -z "${END}" ]; then
+         END=$(wc -l < "$FILE")
+         END=$(trim "${END}")
     fi
 
     # END has been set
@@ -191,7 +185,7 @@ main() {
     else
         # END is a string
         # ignore the leading lines, before searching
-        ENDLINE=$(tail -n +${STARTLINE} ${FILE} | grep ${iflag} -n ${END} | tail +${evalue})
+        ENDLINE=$(tail -n +${STARTLINE} "${FILE}" | grep ${iflag} -n "${END}" | tail +"${evalue}")
         if [[ -z $ENDLINE ]]; then
             printf "Error: string \"%s\" not found after \"%s\" in file %s. Exit.\n" \
                 "${END}" "${BEGIN}" "${FILE}" >&2
@@ -200,13 +194,13 @@ main() {
             # only interested in the line number
             ENDLINE=${ENDLINE%%:*}
             # re-add the ignored leading lines
-            ENDLINE=$((${ENDLINE} + ${STARTLINE} - 1))
+            ENDLINE=$((ENDLINE + STARTLINE - 1))
         fi
     fi
-    ENDLINE=$(($ENDLINE+ $Evalue))
+    ENDLINE=$((ENDLINE + Evalue))
     # printf "DEBUG: Endline: %s\n" $ENDLINE
     if [ $ENDLINE -ge $STARTLINE ]; then
-        tail -n +${STARTLINE} ${FILE} | head -n $((${ENDLINE} - ${STARTLINE} + 1))
+        tail -n +${STARTLINE} "${FILE}" | head -n $((ENDLINE - STARTLINE + 1))
     fi
 }
 
