@@ -12,7 +12,7 @@ SCRIPT_VERSION=1.17.0
 # It is part of the bashberries project
 # see also https://github.com/jonelo/bashberries
 #
-# Copyright 2018 Johann N. Loefflmann
+# Copyright 2019 Johann N. Loefflmann
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -44,7 +44,8 @@ JRE/JDK you can update the JRE/JDK both fast and comfortable.
 Both GNU/Linux and macOS are supported.
 
 Usage:
-    update_jdk [ [-h] | [-a] [-d] [-f] [-k] [-s source] [-t type] [path] ]
+    update_jdk [ [-h] |
+            [-a] [-d] [-f] [-k] -s source [-t type] [-z] [-Z location] [path] ]
 
 Options:
     -a      accept license. That is a required option if you want to
