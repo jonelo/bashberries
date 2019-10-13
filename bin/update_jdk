@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #
 # update_jdk
-SCRIPT_VERSION=1.17.0
+SCRIPT_VERSION=1.18.0
 #
 # Downloads the latest x64 JRE/JDK tarball resp. the latest tzupdater zip
 # from the web, extracts it and creates/updates a symlink called <type>_latest
@@ -220,6 +220,10 @@ function main() {
         exit
     fi
 
+    if [ "$SOURCE" = "tzupdater" ]; then
+        TYPE="tzupdater"
+    fi
+
     # parameters
     case $# in
         0) TARGET_DIR="${SCRIPT_DIR}/${TYPE}"
@@ -231,8 +235,8 @@ function main() {
            ;;
     esac
 
-    # any jre, sjre, jdk, etc. with -z option is wanted
-    if [ "$TYPE" != "tzupdater" -a $ZOPTION -eq 1 ]; then
+    # a JRE, JDK with -z option is wanted
+    if [ "$SOURCE" != "tzupdater" -a $ZOPTION -eq 1 ]; then
         # get the tzupdater
         "${SCRIPT_DIR}/${SCRIPT_NAME}" -a -s tzupdater "$TARGET_DIR"
     fi
@@ -246,14 +250,13 @@ function main() {
         mkdir -p "${TARGET_DIR}"
     fi
 
-    if [ $SOURCE = "tzupdater" ]; then
+    if [ "$SOURCE" = "tzupdater" ]; then
         DOWNLOAD_ADDRESS="http://www.oracle.com/technetwork/java/javase/downloads/tzupdater-download-513681.html"
         downloadWebsite "$DOWNLOAD_ADDRESS" "$TEMP_FILE"
         # Find the address to the tzupdater .zip file
         # e.g. http://download.oracle.com/otn-pub/java/tzupdater/2.1.0/tzupdater-2_1_0.zip
         REGEX='(http://download.oracle.com/otn-pub/java/tzupdater/[^\"]+)\"'
         parseFile "$TEMP_FILE" $REGEX
-        TYPE="tzupdater"
     else
         FOUND_ADDRESS="$SOURCE"
     fi
@@ -290,7 +293,7 @@ function main() {
            printf "%s\n" "${DOWNLOAD_ADDRESS}" > "${VERSION_FILE}"
 
            printf "Extracting the file %s ...\n" "${ARCHIVE_FILE}"
-           if [ $SOURCE = "tzupdater" ]; then
+           if [ "$SOURCE" = "tzupdater" ]; then
                # find the path of the latest tzupdater by searching in the .zip file
                LATEST=$(unzip -l "${ARCHIVE_FILE}" | grep tzupdater.jar)
                LATEST=${LATEST##* }
@@ -305,7 +308,7 @@ function main() {
            fi
 
            # determine SYMLINK name
-           if [ $SOURCE = "tzupdater" ]; then
+           if [ "$SOURCE" = "tzupdater" ]; then
                SYMLINK="${TYPE}.jar"
            else
                if [ "${SUFFIX}" = ".tar.gz" ]; then
