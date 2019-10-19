@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #
 # update_jdk
-SCRIPT_VERSION=1.18.0
+SCRIPT_VERSION=1.19.0
 #
 # Downloads the latest x64 JRE/JDK tarball resp. the latest tzupdater zip
 # from the web, extracts it and creates/updates a symlink called <type>_latest
@@ -69,11 +69,12 @@ Options:
             .tar.gz file that contains the JRE/JDK binaries. You can find
             JRE/JDK tarballs for example at
 
-            - www.oracle.com/java
-            - java.com
-            - jdk.java.net
             - adoptopenjdk.net
             - azul.com
+            - bell-sw.com/java
+            - java.com
+            - jdk.java.net
+            - www.oracle.com/java
 
     -t      type. The name of the symlink prefix, if not specified, jre is used.
 
