@@ -33,7 +33,6 @@ update_jdk          | Downloads the latest JDK from the web, extracts it and cre
 update_property     | Updates the value of a key/value pair in a property file                       |
 update_bashberries  | Downloads all bash scripts from the bashberries project on github              |
 update_tzdatabase   | Updates the time zone database of your Java Runtime Environment                |
-update_tzupdater    | Updates the tzupdater.jar by calling update_jre -t tzupdater                   |
 
 
 ## Overview of the include files
@@ -186,10 +185,10 @@ Examples:
 
 ### update_jdk
 ```
-update_jdk v1.17.0, Copyright 2019 Johann N. Loefflmann
+update_jdk v1.20.0, Copyright 2019-2020 Johann N. Loefflmann
 
-Downloads the JRE/JDK resp. the latest tzupdater zip from the web, extracts
-it and creates/updates a symlink called <type>_latest resp. tzupdater.jar.
+Downloads the JRE/JDK from the web, extracts it and creates/updates a symlink
+called <type>_latest.
 The latest timezone database can be applied to the requested JRE/JDK as well
 so that you have the most possible up to date JRE/JDK within a Java family
 from your preferred source. And since the symlink always points to the
@@ -198,16 +197,9 @@ Both GNU/Linux and macOS are supported.
 
 Usage:
     update_jdk [ [-h] |
-            [-a] [-d] [-f] [-k] -s source [-t type] [-z] [-Z location] [path] ]
+            [-d] [-f] [-k] -s source [-t type] [-z] [-Z location] [path] ]
 
 Options:
-    -a      accept license. That is a required option if you want to
-            download the tzupdater from Oracle. Please read the license at
-            http://www.oracle.com/technetwork/java/javasebusiness/downloads/
-            L-> tzupdater-lic-354297.txt
-            and allow the script to download the package by specifying this
-            option.
-
     -d      dry run. Don't download the JRE, JDK or tzupdater, just inform the
             user.
 
@@ -222,44 +214,41 @@ Options:
             .tar.gz file that contains the JRE/JDK binaries. You can find
             JRE/JDK tarballs for example at
 
-            - www.oracle.com/java
-            - java.com
-            - jdk.java.net
             - adoptopenjdk.net
             - azul.com
+            - bell-sw.com/java
+            - java.com
+            - jdk.java.net
+            - www.oracle.com/java
 
     -t      type. The name of the symlink prefix, if not specified, jre is used.
 
     -v      version. Prints out the version of this script.
 
     -z      after the JRE or JDK has been downloaded and extracted, the
-            latest tzupdater will be downloaded and applied to the JRE or JDK.
-            Requires -a to work.
+            latest tzdata will be applied to the JRE or JDK.
+            The script expects the tzupdater.jar in the /Users/johann/IdeaProjects/bashberries/bin
 
     -Z      the timezone files if not from IANA.
 
 Parameters:
-    path    specifies the path where the JRE, JDK or tzupdater should be stored.
+    path    specifies the path where the JRE, JDK should be stored.
             It will be created if it doesn't exist.
             If omitted, .<type>/ will be used.
 
 Examples:
-    ./update_jdk -s "$ADDRESS" -a
+    ./update_jdk -s "$ADDRESS"
             downloads the JRE tarball from "$ADDRESS", extracts it, and updates
             the JRE in ./jre/ and it creates a symlink called jre_latest there.
-    ./update_jdk -s "$ADDRESS" -az myjres
+    ./update_jdk -s "$ADDRESS" -z myjres
             updates the JRE in myjres and it updates the symlink called
-            jre_latest there. Additionally the latest timezone updater
-            is being downloaded and called so that the JRE's timezone database
-            also gets updated.
-    ./update_jdk -s "$ADDRESS" -a -t jdk /opt/java/
+            jre_latest there. Additionally the timezone updater
+            is being called so that the JRE's timezone database also gets updated.
+    ./update_jdk -s "$ADDRESS" -t jdk /opt/java/
             updates the JDK in /opt/java/ and it updates a symlink
             called jdk_latest there.
-    ./update_jdk -a -s tzupdater /opt/java/
-            updates the tzupdater in /opt/java/ and it updates a symlink
-            called tzupdater.jar there.
-    ./update_jdk -az -s "$ADDRESS" -t openjdk11
-            downloads both the latest tzupdater and the JDK from "$ADDRESS",
+    ./update_jdk -z -s "$ADDRESS" -t openjdk11
+            downloads the JDK from "$ADDRESS",
             applies the latest timezone database from IANA to the JDK by calling
             the tzupdater tool. Symlink called openjdk11/openjdk11_latest
             will point to the latest and updated OpenJDK11 build.

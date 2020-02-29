@@ -1,18 +1,17 @@
 #!/usr/bin/env bash
 #
 # update_jdk
-SCRIPT_VERSION=1.19.0
+SCRIPT_VERSION=1.20.0
 #
 # Downloads the latest x64 JRE/JDK tarball resp. the latest tzupdater zip
-# from the web, extracts it and creates/updates a symlink called <type>_latest
-# or tzupdater.jar. Supports multiple sources, such as oracle.com, java.com,
-# jdk.java.net, and adoptopenjdk.net. The OS flavor of the JRE/JDK is determined
-# by the OS that you are running. Linux and macOS are supported.
+# from the web, extracts it and creates/updates a symlink called <type>_latest.
+# The OS flavor of the JRE/JDK is determined by the OS that you are running.
+# Linux and macOS are supported.
 #
 # It is part of the bashberries project
 # see also https://github.com/jonelo/bashberries
 #
-# Copyright 2019 Johann N. Loefflmann
+# Copyright 2019-2020 Johann N. Loefflmann
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -33,10 +32,10 @@ SCRIPT_NAME="${0##*/}"
 
 usage() {
 cat << END
-update_jdk v${SCRIPT_VERSION}, Copyright 2019 Johann N. Loefflmann
+update_jdk v${SCRIPT_VERSION}, Copyright 2019-2020 Johann N. Loefflmann
 
-Downloads the JRE/JDK resp. the latest tzupdater zip from the web, extracts
-it and creates/updates a symlink called <type>_latest resp. tzupdater.jar.
+Downloads the JRE/JDK from the web, extracts it and creates/updates a symlink
+called <type>_latest.
 The latest timezone database can be applied to the requested JRE/JDK as well
 so that you have the most possible up to date JRE/JDK within a Java family
 from your preferred source. And since the symlink always points to the
@@ -45,16 +44,9 @@ Both GNU/Linux and macOS are supported.
 
 Usage:
     update_jdk [ [-h] |
-            [-a] [-d] [-f] [-k] -s source [-t type] [-z] [-Z location] [path] ]
+            [-d] [-f] [-k] -s source [-t type] [-z] [-Z location] [path] ]
 
 Options:
-    -a      accept license. That is a required option if you want to
-            download the tzupdater from Oracle. Please read the license at
-            http://www.oracle.com/technetwork/java/javasebusiness/downloads/
-            L-> tzupdater-lic-354297.txt
-            and allow the script to download the package by specifying this
-            option.
-
     -d      dry run. Don't download the JRE, JDK or tzupdater, just inform the
             user.
 
@@ -81,56 +73,34 @@ Options:
     -v      version. Prints out the version of this script.
 
     -z      after the JRE or JDK has been downloaded and extracted, the
-            latest tzupdater will be downloaded and applied to the JRE or JDK.
-            Requires -a to work.
+            latest tzdata will be applied to the JRE or JDK.
+            The script expects the tzupdater.jar in the ${SCRIPT_DIR}
 
     -Z      the timezone files if not from IANA.
 
 Parameters:
-    path    specifies the path where the JRE, JDK or tzupdater should be stored.
+    path    specifies the path where the JRE, JDK should be stored.
             It will be created if it doesn't exist.
             If omitted, .<type>/ will be used.
 
 Examples:
-    ./update_jdk -s "\$ADDRESS" -a
+    ./update_jdk -s "\$ADDRESS"
             downloads the JRE tarball from "\$ADDRESS", extracts it, and updates
             the JRE in ./jre/ and it creates a symlink called jre_latest there.
-    ./update_jdk -s "\$ADDRESS" -az myjres
+    ./update_jdk -s "\$ADDRESS" -z myjres
             updates the JRE in myjres and it updates the symlink called
-            jre_latest there. Additionally the latest timezone updater
-            is being downloaded and called so that the JRE's timezone database
-            also gets updated.
-    ./update_jdk -s "\$ADDRESS" -a -t jdk /opt/java/
+            jre_latest there. Additionally the timezone updater
+            is being called so that the JRE's timezone database also gets updated.
+    ./update_jdk -s "\$ADDRESS" -t jdk /opt/java/
             updates the JDK in /opt/java/ and it updates a symlink
             called jdk_latest there.
-    ./update_jdk -a -s tzupdater /opt/java/
-            updates the tzupdater in /opt/java/ and it updates a symlink
-            called tzupdater.jar there.
-    ./update_jdk -az -s "\$ADDRESS" -t openjdk11
-            downloads both the latest tzupdater and the JDK from "\$ADDRESS",
+    ./update_jdk -z -s "\$ADDRESS" -t openjdk11
+            downloads the JDK from "\$ADDRESS",
             applies the latest timezone database from IANA to the JDK by calling
             the tzupdater tool. Symlink called openjdk11/openjdk11_latest
             will point to the latest and updated OpenJDK11 build.
 END
 exit 0
-}
-
-
-function licenseAcceptedRequired() {
-    if [ $1 -eq 0 ]; then
-cat << EOM
-
-ERROR: In order to allow this script to download the latest tzupdater from
-       oracle.com, please read and accept the license at
-       http://www.oracle.com/technetwork/java/javasebusiness/downloads/
-       L-> tzupdater-lic-354297.txt
-       by specifying the -a option to this script.
-
-       Use option -h to get more help.
-
-EOM
-        exit 1
-    fi
 }
 
 # Download a webpage and store it to a file
@@ -169,6 +139,20 @@ function parseFile() {
     fi
 }
 
+function runTzUpdater() {
+    # is tzupdater.jar in the script dir?
+    if [[ -f "${SCRIPT_DIR}/tzupdater.jar" ]]; then
+        # call the tzupdater by using the java binary from the JRE/JDK that we have downloaded
+        # specify the expected property as I described in Jan 2007:
+        # https://web.archive.org/web/20071228042650/https://lists.apple.com/archives/Java-dev/2007/Jan/msg00060.html
+        "${TARGET_DIR}/${TYPE}_latest/bin/java" -Djava.vendor="Oracle Corporation" -jar "${SCRIPT_DIR}/tzupdater.jar" -v -l $ZUPPER
+    else
+        printf "Warning: %s not found.\n" "${SCRIPT_DIR}/tzupdater.jar"
+        printf "You can download tzupdater.jar from %s\n" "https://www.oracle.com/java/technologies/javase-tzupdater-downloads.html"
+        printf "Ignoring option -z\n"
+    fi
+}
+
 function main() {
     # options
     ACCEPT=0
@@ -182,8 +166,6 @@ function main() {
     while getopts ':afkht:dvzZ:s:' OPTION
     do
         case $OPTION in
-            a) ACCEPT=1
-               ;;
             d) DRYRUN=1
                ;;
             f) FORCE=1
@@ -212,17 +194,9 @@ function main() {
 
     SUFFIX=".tar.gz"
     # option checks
-    if [ $ZOPTION -eq 1 ]; then
-        licenseAcceptedRequired $ACCEPT
-    fi
-
     if [ "$SOURCE" = "" ]; then
         printf "ERROR: Option -s is required.\n"
         exit
-    fi
-
-    if [ "$SOURCE" = "tzupdater" ]; then
-        TYPE="tzupdater"
     fi
 
     # parameters
@@ -236,12 +210,6 @@ function main() {
            ;;
     esac
 
-    # a JRE, JDK with -z option is wanted
-    if [ "$SOURCE" != "tzupdater" -a $ZOPTION -eq 1 ]; then
-        # get the tzupdater
-        "${SCRIPT_DIR}/${SCRIPT_NAME}" -a -s tzupdater "$TARGET_DIR"
-    fi
-
     VERSION_FILE="${TARGET_DIR}/${TYPE}.version"
     TEMP_FILE=/tmp/update_${TYPE}.$$
 
@@ -251,17 +219,7 @@ function main() {
         mkdir -p "${TARGET_DIR}"
     fi
 
-    if [ "$SOURCE" = "tzupdater" ]; then
-        DOWNLOAD_ADDRESS="http://www.oracle.com/technetwork/java/javase/downloads/tzupdater-download-513681.html"
-        downloadWebsite "$DOWNLOAD_ADDRESS" "$TEMP_FILE"
-        # Find the address to the tzupdater .zip file
-        # e.g. http://download.oracle.com/otn-pub/java/tzupdater/2.1.0/tzupdater-2_1_0.zip
-        REGEX='(http://download.oracle.com/otn-pub/java/tzupdater/[^\"]+)\"'
-        parseFile "$TEMP_FILE" $REGEX
-    else
-        FOUND_ADDRESS="$SOURCE"
-    fi
-
+    FOUND_ADDRESS="$SOURCE"
     DOWNLOAD_ADDRESS="${FOUND_ADDRESS}"
     ARCHIVE_FILE="${TARGET_DIR}/${DOWNLOAD_ADDRESS##*/}"
 
@@ -284,45 +242,31 @@ function main() {
        if [ -f "${ARCHIVE_FILE}" ]; then
            rm "${ARCHIVE_FILE}"
        fi
-       if [ "$SOURCE" = "tzupdater" ]; then
-           curl -Lo "${ARCHIVE_FILE}" -j -k -L -H "Cookie: oraclelicense=accept-securebackup-cookie" "$DOWNLOAD_ADDRESS"
-       else
-           curl -Lo "${ARCHIVE_FILE}" "$DOWNLOAD_ADDRESS"
-       fi
+
+       curl -Lo "${ARCHIVE_FILE}" "$DOWNLOAD_ADDRESS"
+
        if [ -f "${ARCHIVE_FILE}" ]; then
 
            printf "%s\n" "${DOWNLOAD_ADDRESS}" > "${VERSION_FILE}"
 
            printf "Extracting the file %s ...\n" "${ARCHIVE_FILE}"
-           if [ "$SOURCE" = "tzupdater" ]; then
-               # find the path of the latest tzupdater by searching in the .zip file
-               LATEST=$(unzip -l "${ARCHIVE_FILE}" | grep tzupdater.jar)
-               LATEST=${LATEST##* }
-               # extracting the .zip
-               unzip -d "${TARGET_DIR}" -o "${ARCHIVE_FILE}"
+           if [ "${SUFFIX}" = ".tar.gz" ]; then
+               gunzip < "${ARCHIVE_FILE}" | tar xfv - -C "${TARGET_DIR}"
            else
-               if [ "${SUFFIX}" = ".tar.gz" ]; then
-                   gunzip < "${ARCHIVE_FILE}" | tar xfv - -C "${TARGET_DIR}"
-               else
-                   unzip -d "${TARGET_DIR}" -o "${ARCHIVE_FILE}"
-               fi
+               unzip -d "${TARGET_DIR}" -o "${ARCHIVE_FILE}"
            fi
 
            # determine SYMLINK name
-           if [ "$SOURCE" = "tzupdater" ]; then
-               SYMLINK="${TYPE}.jar"
+           if [ "${SUFFIX}" = ".tar.gz" ]; then
+               LATEST=$(gunzip < "${ARCHIVE_FILE}" | tar tvf - | grep '/bin/java$')
            else
-               if [ "${SUFFIX}" = ".tar.gz" ]; then
-                   LATEST=$(gunzip < "${ARCHIVE_FILE}" | tar tvf - | grep '/bin/java$')
-               else
-                   LATEST=$(unzip -l "${ARCHIVE_FILE}" | grep '/bin/java$')
-               fi
-               # extract the path from the .../bin/java string
-               LATEST=${LATEST##* } # remove until the first blank
-               LATEST=${LATEST%/*} # remove /java from the string
-               LATEST=${LATEST%/*} # remove /bin from the string
-               SYMLINK="${TYPE}_latest"
+               LATEST=$(unzip -l "${ARCHIVE_FILE}" | grep '/bin/java$')
            fi
+           # extract the path from the .../bin/java string
+           LATEST=${LATEST##* } # remove until the first blank
+           LATEST=${LATEST%/*} # remove /java from the string
+           LATEST=${LATEST%/*} # remove /bin from the string
+           SYMLINK="${TYPE}_latest"
 
            # relative symlink preferred
            BACKUP=$(pwd)
@@ -341,22 +285,18 @@ function main() {
            fi
 
            # any jre, sjre or jdk, etc. with -z option is wanted
-           if [ "$SOURCE" != "tzupdater" -a $ZOPTION -eq 1 ]; then
-               # call the tzupdater by using the java binary from the JRE/JDK that we have just downloaded
-               # specify the expected property as I described in Jan 2007:
-               # https://web.archive.org/web/20071228042650/https://lists.apple.com/archives/Java-dev/2007/Jan/msg00060.html
-               "${TARGET_DIR}/${TYPE}_latest/bin/java" -Djava.vendor="Oracle Corporation" -jar "${TARGET_DIR}/tzupdater.jar" -v -l $ZUPPER
+           if [ $ZOPTION -eq 1 ]; then
+               runTzUpdater
            fi
 
-           if [ "$SOURCE" != "tzupdater" ]; then
-               printf "\nNew binaries have been stored to folder %s\n" "${TARGET_DIR}/${LATEST}"
-               printf "Symlink has been created as %s\n" "${TARGET_DIR}/${SYMLINK}"
+           printf "\nNew binaries have been stored to folder %s\n" "${TARGET_DIR}/${LATEST}"
+           printf "Symlink has been created as %s\n" "${TARGET_DIR}/${SYMLINK}"
 
-               EXECUTABLE="${TARGET_DIR}/${SYMLINK}/bin/java"
-               # specifying a 10 MB max heap in order to avoid too big heap values on large systems due to Java's ergonomics
-               printf "\nExecuting \"%s -Xmx10m -version\" ...\n" "${EXECUTABLE}"
-               "${TARGET_DIR}/${SYMLINK}/bin/java" -Xmx10m -version
-           fi
+           EXECUTABLE="${TARGET_DIR}/${SYMLINK}/bin/java"
+           # specifying a 10 MB max heap in order to avoid too big heap values on large systems due to Java's ergonomics
+           printf "\nExecuting \"%s -Xmx10m -version\" ...\n" "${EXECUTABLE}"
+           "${TARGET_DIR}/${SYMLINK}/bin/java" -Xmx10m -version
+
        else
            printf "FATAL: Download failed.\n"
            exit 1
@@ -364,20 +304,14 @@ function main() {
     else
        printf "Skipping download, because it seems that you have downloaded %s already in the past. Use -f to force a download.\n" $DOWNLOAD_ADDRESS
 
-       if [ "$SOURCE" = "tzupdater" ]; then
-           SYMLINK="${TYPE}.jar"
-       else
-           SYMLINK="${TYPE}_latest"
-       fi
+       SYMLINK="${TYPE}_latest"
        printf "\nSymlink in order to access it, was stored as %s:\n" "${TARGET_DIR}/${SYMLINK}"
        ls -la "${TARGET_DIR}/${SYMLINK}"
 
        # any jre, sjre or jdk, etc. with -z option is wanted
-       if [ "$SOURCE" != "tzupdater" -a $ZOPTION -eq 1 ]; then
-           # call the tzupdater by using the java binary from the JRE/JDK that we downloaded in the past
-           "${TARGET_DIR}/${TYPE}_latest/bin/java" -Djava.vendor="Oracle Corporation" -jar "${TARGET_DIR}/tzupdater.jar" -v -l $ZUPPER
+       if [ $ZOPTION -eq 1 ]; then
+           runTzUpdater
        fi
-
     fi
 }
 
