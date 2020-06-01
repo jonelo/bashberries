@@ -27,6 +27,7 @@ bigfiles            | Determines the biggest files in a directory and it's subdi
 deepgrep            | Finds text in files recursively                                                |
 latlng              | Determines both latitude and longitude of a location                           |
 lines               | Extracts a block of lines from a textfile                                      |
+m3u8tomp4.sh        | Converts all .m3u8 files in the current working dir to .mp4
 pwned               | Has your password been pwned?                                                  |
 update_jdk          | Downloads the latest JDK from the web, extracts it and creates a symlink       |
 update_property     | Updates the value of a key/value pair in a property file                       |
@@ -180,6 +181,12 @@ Examples:
                with the line that starts with "2017-08-06" and ending with
                the line that starts with "2017-08-07", but not printing out
                that last ending line
+```
+
+### m3u8tomp4.sh
+
+```
+no options, no parameters.
 ```
 
 ### update_jdk
