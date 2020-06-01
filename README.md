@@ -186,7 +186,10 @@ Examples:
 ### m3u8tomp4.sh
 
 ```
-no options, no parameters.
+no options, no parameters. It just converts all .m3u8 files in the current
+working directory to .mp4. It expects the latest ffmpeg binary in the script
+dir. It exits if there is an error. In case of success, the .m3u8 will
+be removed.
 ```
 
 ### update_jdk
